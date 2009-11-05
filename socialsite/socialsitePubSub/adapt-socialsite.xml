@@ -72,6 +72,12 @@
 			
 		<copy file="${basedir}/socialsite/gadgets/files/container/pubsub-router.js" 
 			tofile="${SOCIALSITE_PATH}/gadgets/files/container/pubsub-router.js"/>
+
+		<copy file="${basedir}/socialsite/local_gadgets/sample-pubsub-publisher.xml" 
+			tofile="${SOCIALSITE_PATH}/local_gadgets/sample-pubsub-publisher.xml"/>
+
+		<copy file="${basedir}/socialsite/local_gadgets/sample-pubsub-subscriber.xml" 
+			tofile="${SOCIALSITE_PATH}/local_gadgets/sample-pubsub-subscriber.xml"/>
 			
 	</target>
   
