@@ -4,13 +4,24 @@
             title="Cam Widget"
             author_email="my@email.com">
     </ModulePrefs>
-    <Content type="html"><![CDATA[<div>Select CAM storage Mode:</div> 
+    <Content type="html"><![CDATA[<script src="./gears_init.js"></script>
+			<script>
+			 	var url = window.location;
+  				if (!window.google || !google.gears) {
+    				location.href = "http://gears.google.com/?action=install&message=hello" + "&return="+url;
+  				}
+			</script>
+    	
+    	
+			<script language="JavaScript" src="./camwidget_canvas.js"></script>
+			
+    		<div>Select CAM storage Mode:</div> 
 	    	<script>
-		    	function inform(value) {
-		    		document.getElementById("output").innerHTML = "Storage Mode: " + value;
+		    	function inform(storagemode) {
+		    		javascript:store(storagemode);	
 				}
 			</script>
 			<div> <input type="Radio" name="selection" value="local" onclick="inform(value)"> local </input> </div>
 			<div> <input type="Radio" name="selection" value="off" onclick="inform(value)"> off </input> </div>
-	    	<div id="output">Storage Mode: </div>]]></Content>
+			<div> <a href="javascript:query(10)"> last 10 entries...</a> </div>]]></Content>
 </Module>
