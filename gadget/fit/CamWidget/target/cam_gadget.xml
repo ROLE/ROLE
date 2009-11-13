@@ -1,27 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Module>
     <ModulePrefs
-            title="Cam Widget"
-            author_email="my@email.com">
+            title="Cam Widget">
     </ModulePrefs>
     <Content type="html"><![CDATA[<script src="./gears_init.js"></script>
+    		<script language="JavaScript" src="./camwidget_canvas.js"></script>
+    		
 			<script>
-			 	var url = window.location;
+			 	var url = "\"" + window.location + "\""; 
   				if (!window.google || !google.gears) {
-    				location.href = "http://gears.google.com/?action=install&message=hello" + "&return="+url;
+  					var gears_url = "\"http://gears.google.com/?action=install&message=&return=" + url + "\"";
+  					// embedded gears page
+  					//document.write('<iframe name="f1" src=', gears_url, ' width="600" height="200" scrolling="yes"/>');
+  					// link to install page
+  					document.write('<h3> To use the CAM Widget you have to install <a href=', gears_url, ' target="_new"> gears </a> </h3>');
   				}
-			</script>
-    	
-    	
-			<script language="JavaScript" src="./camwidget_canvas.js"></script>
-			
-    		<div>Select CAM storage Mode:</div> 
-	    	<script>
-		    	function inform(storagemode) {
-		    		javascript:store(storagemode);	
-				}
-			</script>
-			<div> <input type="Radio" name="selection" value="local" onclick="inform(value)"> local </input> </div>
-			<div> <input type="Radio" name="selection" value="off" onclick="inform(value)"> off </input> </div>
-			<div> <a href="javascript:query(10)"> last 10 entries...</a> </div>]]></Content>
+  				else {
+					document.write('<div>Select CAM storage Mode:</div>');
+					document.write('<div> <input type="Radio" name="selection" value="local" onclick="inform(value)"> local </input> </div>');
+					document.write('<div> <input type="Radio" name="selection" value="off" onclick="inform(value)"> off </input> </div>');
+					document.write('<div> <a href="javascript:query(10)"> last 10 entries...</a> </div>');
+					
+					function inform(storagemode) {
+			    		javascript:store(storagemode);	
+					}
+  				}
+			</script>]]></Content>
 </Module>
