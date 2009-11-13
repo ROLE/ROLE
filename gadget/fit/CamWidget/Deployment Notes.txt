@@ -1,5 +1,0 @@
-Copy
-cam_gadget.xml
-camwidget_canvas.js
-into 
-C:\Programme\Glassfish SDK\domains\domain1\applications\j2ee-modules\socialsite\local_gadgets
