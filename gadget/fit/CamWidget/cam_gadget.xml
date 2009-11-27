@@ -9,7 +9,6 @@
     	<![CDATA[
     		<script src="./gears_init.js"></script>
     		<script language="JavaScript" src="./camwidget_canvas.js"></script>
-    		
 			<script>
 			 	var url = "\"" + window.location + "\""; 
   				if (!window.google || !google.gears) {
@@ -21,6 +20,7 @@
   				}
   				else {
 					document.write('<div>Select CAM storage Mode:</div>');
+					document.write('<div> <input type="Radio" name="selection" value="remote" onclick="inform(value)"> remote </input> </div>');
 					document.write('<div> <input type="Radio" name="selection" value="local" onclick="inform(value)"> local </input> </div>');
 					document.write('<div> <input type="Radio" name="selection" value="off" onclick="inform(value)"> off </input> </div>');
 					document.write('<div> <a href="javascript:query(10)"> last 10 entries...</a> </div>');
@@ -31,7 +31,5 @@
   				}
 			</script>
     	]]>
-    	
-    	
     </Content>
 </Module>
