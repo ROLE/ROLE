@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+-->
+
+<Module>
+<ModulePrefs title="Sample OpenApp Subscriber"
+             height="250">
+<Require feature="pubsub"/>
+</ModulePrefs>
+<Content type="html">
+<![CDATA[
+<script>
+var NS = {
+  RDF: "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+  A: "http://www.w3.org/2000/10/annotation-ns#",
+  ROLE: "http://www.role-project.eu/rdf/"
+};
+
+function callback(sender, envelope) {
+  if (envelope.event === "select") { // Filter out select events
+    if (envelope.type === "namespaced-properties" && envelope.message[NS.RDF+"type"] === NS.ROLE+"Word") { // Only care about words
+      var item = document.createElement("div");
+      item.appendChild(document.createTextNode(envelope.message[NS.A+"content"]));
+      document.getElementById("output").appendChild(item);
+    }
+  }
+}
+
+function subscribe() {
+  gadgets.pubsub.subscribe("openapp", callback);
+}
+
+function unsubscribe() {
+  gadgets.pubsub.unsubscribe("openapp");
+  document.getElementById("output").innerHTML = "";
+}
+
+window.onload = subscribe; // Automatically subscribe
+window.onunload = unsubscribe; // Automatically unsubscribe
+
+</script>
+<!--<div>
+<input type="button" value="Subscribe" onclick="subscribe()"/>
+<input type="button" value="Unsubscribe" onclick="unsubscribe()"/>
+</div>-->
+<div><strong>Added words:</strong></div>
+<div id="output">
+</div>
+]]>
+</Content>
+</Module>

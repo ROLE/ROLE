@@ -78,6 +78,12 @@
 
 		<copy file="${basedir}/socialsite/local_gadgets/sample-pubsub-subscriber.xml" 
 			tofile="${SOCIALSITE_PATH}/local_gadgets/sample-pubsub-subscriber.xml"/>
+
+                <copy file="${basedir}/socialsite/local_gadgets/sample-openapp-publisher.xml"
+                        tofile="${SOCIALSITE_PATH}/local_gadgets/sample-openapp-publisher.xml"/>
+
+                <copy file="${basedir}/socialsite/local_gadgets/sample-openapp-subscriber.xml"
+                        tofile="${SOCIALSITE_PATH}/local_gadgets/sample-openapp-subscriber.xml"/>
 			
 	</target>
   
