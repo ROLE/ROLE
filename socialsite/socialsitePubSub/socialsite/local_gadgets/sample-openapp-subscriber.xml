@@ -25,34 +25,32 @@
 </ModulePrefs>
 <Content type="html">
 <![CDATA[
+<script src="http://open-app.googlecode.com/files/openapp.js"></script>
 <script>
-var NS = {
-  RDF: "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-  A: "http://www.w3.org/2000/10/annotation-ns#",
-  ROLE: "http://www.role-project.eu/rdf/"
-};
 
-function callback(sender, envelope) {
-  if (envelope.event === "select") { // Filter out select events
-    if (envelope.type === "namespaced-properties" && envelope.message[NS.RDF+"type"] === NS.ROLE+"Word") { // Only care about words
-      var item = document.createElement("div");
-      item.appendChild(document.createTextNode(envelope.message[NS.A+"content"]));
-      document.getElementById("output").appendChild(item);
+function callback(envelope, message) {
+  // Filter out select events
+  if (envelope.event === "select") {
+    // Require namespaced-properties
+    if (envelope.type === "namespaced-properties") {
+      // Require rdf:type to be a word
+      if (message[gadgets.openapp.RDF + "type"] ===
+          "http://example.com/rdf/Word") {
+        var item = document.createElement("div");
+        item.appendChild(document.createTextNode(
+            message[gadgets.openapp.RDF + "label"]));
+        document.getElementById("output").appendChild(item);
+      }
     }
   }
 }
 
-function subscribe() {
-  gadgets.pubsub.subscribe("openapp", callback);
-}
-
-function unsubscribe() {
-  gadgets.pubsub.unsubscribe("openapp");
-  document.getElementById("output").innerHTML = "";
-}
-
-window.onload = subscribe; // Automatically subscribe
-window.onunload = unsubscribe; // Automatically unsubscribe
+window.onload = function() {
+  gadgets.openapp.connect(callback);
+};
+window.onunload = function() {
+  gadgets.openapp.disconnect();
+};
 
 </script>
 <!--<div>
