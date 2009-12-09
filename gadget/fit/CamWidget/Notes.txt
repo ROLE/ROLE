@@ -1,0 +1,7 @@
+* Auswahl: Speichern ob CAM Daten Remote/Lokal/Off gespeichert werden
+	- bisher wird beim "neu einloggen" immer "lokal" gesetzt 
+	- wäre besser, wenn sich das System den letzten Zustand merkt
+		+ user profile
+		+ oder via "speichern des Status" - <Require feature="setprefs"/> 
+
+* Verbinden mit neuem OpenApplication Pubsub Gadgets 
