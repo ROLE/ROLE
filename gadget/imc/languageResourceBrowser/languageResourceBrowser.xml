@@ -1,0 +1,396 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Module>
+  <ModulePrefs 
+  	title="Language Resource Browser" 
+  	title_url="" 
+	description="" 
+	author="" 
+	author_email="" 
+	author_affiliation="" 
+	author_location="" 
+	category="" 
+	thumbnail="__MSG_thumbnail__" 
+	screenshot="__MSG_screenshot__" 
+	heigth="650">
+    <Require feature="dynamic-height" />
+    <Require feature="pubsub" />
+    <Require feature="tabs" />
+  </ModulePrefs>
+  <Content type="html"><![CDATA[
+
+<script src="http://www.learning-demo.eu/roleGadgets/gadgets/imc/languageResourceBrowser/pmrpc.js" type="text/javascript"></script>
+
+<!--link href="languageResourceBrowser.css" rel="stylesheet" type="text/css" /-->
+<!--link href="../css/imcWidgets.css" rel="stylesheet" type="text/css" /-->
+
+<script type="text/javascript">
+	// Initialize tabs, designate the tab named "Two" as
+	// the tab selected by default.
+
+	var tabs = new gadgets.TabSet(__MODULE_ID__, "Text");
+	
+	var CONTENT_URL = "http://www.learning-demo.eu/roleGadgets/gadgets/imc/languageResourceBrowser/html/";
+	
+	  
+	function init() {
+		 tabs.addTab("Text", {
+		   contentContainer: document.getElementById("one_id")
+		});
+		 tabs.addTab("Own Text", {
+		   contentContainer: document.getElementById("two_id")
+		});
+		 tabs.addTab("Media", {
+		   contentContainer: document.getElementById("three_id")
+		}); 
+		 tabs.addTab("Help", {
+		   contentContainer: document.getElementById("four_id")
+		});
+		
+		//load css dynamic 
+      	loadCss(CONTENT_URL+"../"+"../css/imcWidgets.css");
+      	loadCss(CONTENT_URL+"../"+"languageResourceBrowser.css");
+		    
+		browseToText(document.getElementById('textURL').value);
+		browseToMedia(document.getElementById('mediaURL').value);
+		
+		gadgets.window.adjustHeight();
+	}
+	
+	function loadCss(url){  
+    	//add salt vs caching
+    	//url+"#"+(new Date()).getTime();
+    
+	    var headID = document.getElementsByTagName("head")[0];         
+		var cssNode = document.createElement('link');
+		cssNode.type = 'text/css';
+		cssNode.rel = 'stylesheet';
+		cssNode.href = url;
+		cssNode.media = 'screen';
+		headID.appendChild(cssNode);
+    }
+	
+	function fetchSelection(onSuccessHandler) {
+			
+		iframe = window.frames[0];
+
+		parameters = {
+		  destination : iframe,
+		  publicProcedureName : "fetchSelection",
+		  params : {"proxyPrefix" : "http://www.learning-demo.eu/gadgetProxy/GadgetProxy?url="},
+		  onSuccess : onSuccessHandler,
+		  onError : onErrorHandler,
+		  retries : 15,
+		  timeout : 4
+		};
+	 
+		pmrpc.call(parameters);
+		/*
+		var iframe = window.frames[0];
+				
+		var startTime = (new Date()).getTime();
+
+		var parameters = {
+		  destination : iframe,
+		  publicProcedureName : "HelloPMRPC",
+		  params : {time : startTime},
+		  onSuccess : function(returnObj) {alert("Time needed"+returnObj.returnValue);},
+		  onError : function(statusObj) {alert("X"+statusObj.description);},
+		  retries : 5,
+		  timeout : 0
+		};
+		pmrpc.call(parameters);
+		  */
+		//alert("called");
+	}
+	
+	function onErrorHandler(statusObj){
+		alert("PMRPC call failed:\n"+statusObj.description);
+	}
+	
+	function fetchTermSelectionHandler(returnObj){
+		document.getElementById("textTerm").value = returnObj.returnValue.selection;
+		document.getElementById("textSrc").value = returnObj.returnValue.src;
+	}
+	
+	function fetchContextSelectionHandler(returnObj){
+		document.getElementById("textContext").value = returnObj.returnValue.selection;
+		document.getElementById("textSrc").value = returnObj.returnValue.src;
+	}
+		
+	function sendSelectionToTrainer(termId,contextId,srcId) {
+		
+		//create the object
+		var msg = new Object();
+		msg.term = document.getElementById(termId).value;
+		msg.context = document.getElementById(contextId).value;
+		msg.src = document.getElementById(srcId).value;
+		
+		//transform it to JSON
+		var msgJSONObject =  gadgets.json.stringify(msg);
+		
+		//send it
+		gadgets.pubsub.publish("role-trainer", msgJSONObject);
+	}
+	
+	function sendSelectionToTranslator(termId,contextId,srcId) {
+	
+		//create the object
+		var msg = new Object();
+		msg.term = document.getElementById(termId).value;
+		msg.context = document.getElementById(contextId).value;
+		msg.src = document.getElementById(srcId).value;
+		
+		//transform it to JSON
+		var msgJSONObject =  gadgets.json.stringify(msg);
+		
+		//send it
+		gadgets.pubsub.publish("role-translator", msgJSONObject);
+	}
+	
+	function browseToText(url) { 
+		//select iframe
+		iframe = window.frames[0];
+		
+		//get the requested page from the proxy	 
+		iframe.location = "http://www.learning-demo.eu/gadgetProxy/GadgetProxy?url="+url;	
+	}	
+	
+	function browseToMedia(url){
+		//select iframe
+		iframe = window.frames[1];
+		
+		//get the requested page from the proxy	
+		iframe.location = url;
+	
+	
+		//"http://www.youtube.com/watch?v=1Th64Nzeaps&amp;feature=player_embedded"
+	}	
+	
+	function getOwnTextSelection(targetId){
+
+		var selection = "Nothing selected";
+
+		var input = document.getElementById("ownText");
+		input.focus();
+		
+		/*Internet Explorer */
+		if(typeof document.selection != 'undefined') {
+		
+		}
+		/* Gecko based Browser */
+		else if(typeof input.selectionStart != 'undefined'){
+		
+			var start = input.selectionStart;
+			var end = input.selectionEnd;
+			var selection = input.value.substring(start, end);
+			
+		}
+
+		var target = document.getElementById(targetId);	
+		target.value = selection;
+		
+	}
+	
+	
+	// Call init function to initialize and display tabs.
+	gadgets.util.registerOnLoadHandler(init);
+
+</script>
+
+ 
+	<!-- TAB 1 -->
+	<div id="one_id">
+		<div class="imc_widget_frame" style="height:630px;">
+						
+			<div class="imc_widgetContent">
+				<form id="urlForm"  onsubmit="browseToText(document.getElementById('textURL').value);  return false;">
+					<div class="navigation">
+						<div class="urlLeftControls">
+							URL:
+						</div>
+						<div class="urlRightControls">
+	                        <a 	class="text_button"
+								onClick="browseToText(document.getElementById('textURL').value); return false;">
+								<span><span>go</span></span>
+							</a> 
+						</div>
+						<div class="urlCenterControls">	
+							<input id="textURL" class="urlInput" type="text" 
+	                        value="http://www.spotlight-online.de/news/technology/from-tweets-to-grapes-twitter-wine-is-coming"/>
+						</div>	
+					</div>
+				
+					<iframe id="textBrowserWindow" class="browserWindow" src="http://www.spotlight-online.de"></iframe>
+	                
+	                
+	                <label style="margin-left:120px">selected term</label>
+	                <div>
+	                    <a class="text_button" 
+	                    	onClick="fetchSelection(fetchTermSelectionHandler); return false;">
+							<span><span style="width: 80px;">Get Term</span></span>
+						</a>
+	                    
+	                    <div style="margin-left:120px;">        
+	                        <input id="textTerm" name="textTerm" type="text" style="width:100%"/>
+	                    </div>
+	                </div>
+	                <div style="clear:both"></div>
+	                <label style="margin-left:120px">selected context</label>
+	                <div>
+	                    <a class="text_button" 
+	                    	onClick="fetchSelection(fetchContextSelectionHandler); return false;">
+							<span><span style="width: 80px;">Get Context</span></span>
+						</a>
+	                    <div style="margin-left:120px;">
+	                        <textarea id="textContext" name="textContext" 
+	                            style="width:100%; height:50px;"></textarea>
+	                    </div>
+	                </div>
+	                
+	                <input id="textSrc" name="textSrc" type="hidden" value="">
+					<div class="bottom_buttons">
+						<a 	class="text_button"
+							style="margin-right:5px;" 
+							onClick="sendSelectionToTranslator('textTerm','textContext','textSrc'); return false;">
+							<span><span>Send to Translator</span></span>
+						</a>
+						
+						<a class="text_button" onClick="sendSelectionToTrainer('textTerm','textContext','textSrc'); return false;">
+							<span><span>Send to Trainer</span></span>
+						</a>
+					</div>
+					
+					
+				</form>
+			</div>
+			
+		
+		</div>
+	</div>
+	
+	
+	<!-- TAB 2 -->
+	<div id="two_id" style="display:none;">
+		<div class="imc_widget_frame" style="height:630px;">
+			
+			<!-- START CONTENT -->
+			<div class="imc_widgetContent">
+				<label>Own Text (Use copy'n'paste):</label>
+				<textarea id="ownText" name="ownText" style="width:100%; height:300px;">The microblogging service, Twitter, valued at $1 billion and famous for its 140-character "tweets", is starting a wine business. Twitter is partnering with Crushpad, a winemaking service in San Francisco, to produce Fledgling Wine. Part of the profits will go to Room to Read, an organization that teaches poor children in Asia and Africa to read. </textarea>
+				
+				
+				<label style="margin-left:120px">selected term</label>
+	           	<div>
+					<a class="text_button" 
+						onClick="getOwnTextSelection('ownTextTerm'); return false;">
+						<span><span style="width: 80px;">Get Term</span></span>
+					</a>
+		            
+					<div style="margin-left:120px;">        
+					   <input id="ownTextTerm" name="textTerm" type="text" style="width:100%"/>
+					</div>
+	           	</div>
+	           <div style="clear:both"></div>
+		         <label style="margin-left:120px">selected context</label>
+		         <div>
+					<a class="text_button" 
+						onClick="getOwnTextSelection('ownTextContext'); return false;">
+						<span><span style="width: 80px;">Get Context</span></span>
+					</a>
+		             <div style="margin-left:120px;">
+		                 <textarea id="ownTextContext" name="textContext" 
+		                     style="width:100%; height:50px;"></textarea>
+		             </div>
+		         </div>	
+				
+				
+				<label>source</label>
+				<div>
+					<input id="ownSource" type="text" style="width:100%" value="">
+				</div>
+				<div class="bottom_buttons" style"margin-top:5px;">                    	
+	                <a class="text_button" 
+	                	style="margin-right:5px;"
+						onClick="sendSelectionToTranslator('ownTextTerm','ownTextContext','ownSource'); return false;">
+						<span><span>Send to Translator</span></span>
+					</a>
+					<a class="text_button" 
+						onClick="sendSelectionToTrainer('ownTextTerm','ownTextContext','ownSource'); return false;">
+						<span><span>Send to Trainer</span></span>
+					</a>	
+	                    	
+				</div>
+			</div>
+			<!-- END CONTENT -->
+			
+		</div>			
+	</div>
+	
+	<!-- TAB 3 -->
+	<div id="three_id" style="display:none;">
+		<div class="imc_widget_frame" style="height:630px;">
+			
+			<!-- START CONTENT -->
+			<div class="imc_widgetContent">
+				<form  id="" onsubmit="return Go__MODULE_ID__();">
+					<div class="navigation">
+						<div class="urlLeftControls">
+							URL:
+						</div>
+						<div class="urlRightControls">
+							<a 	class="text_button"
+								onClick="browseToMedia(document.getElementById('mediaURL').value); return false;">
+								<span><span>go</span></span>
+							</a> 
+						</div>
+						<div class="urlCenterControls">	
+							<input id="mediaURL" class="urlInput" type="text" 
+	                        value="http://www.youtube.com/watch?v=1Th64Nzeaps&feature=player_embedded"/>
+						</div>	
+					</div>
+				
+					<br/>
+					<iframe id="mediaBrowserWindow" class="browserWindow"></iframe>
+					
+					<label>new term / sentence:</label>
+					<input id="mediaTerm" type="text" width="60%" value="">
+					<input id="mediaContext" name="reset" type="hidden" value="Media Content"/>
+					
+					<div class="bottom_buttons" style"margin-top:5px;">                    	
+		                <a class="text_button" 
+		                	style="margin-right:5px;"
+							onClick="sendSelectionToTranslator('mediaTerm','mediaContext','mediaURL'); return false;">
+							<span><span>Send to Translator</span></span>
+						</a>
+						<a class="text_button" 
+							onClick="sendSelectionToTrainer('mediaTerm','mediaContext','mediaURL'); return false;">
+							<span><span>Send to Trainer</span></span>
+						</a>	
+		                    	
+					</div>
+	
+				</form>
+			</div>
+			<!-- END CONTENT -->
+			
+
+		</div>
+	</div>
+	
+	<!-- TAB 4 -->
+	<div id="four_id" style="display:none;">
+		<div class="imc_widget_frame" style="height:630px;">
+			Help is coming soon..
+		</div>
+	</div>
+	
+	<div class="imc_WidgetFooter" style="width:100%">
+			<div class="imc_WidgetFooter_Logo"></div>
+			<div class="role_WidgetFooter_Logo"></div>
+			<div style="width:105px"></div>			
+	</div>
+	
+
+
+  ]]></Content>
+</Module>

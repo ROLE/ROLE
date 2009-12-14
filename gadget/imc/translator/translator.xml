@@ -1,0 +1,513 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Module>
+  <ModulePrefs 
+  	title="Translator" 
+	title_url="" 
+	description="" 
+	author="" 
+	author_email="" 
+	author_affiliation="" 
+	author_location="" 
+	category="" 
+	thumbnail="__MSG_thumbnail__" 
+	screenshot="__MSG_screenshot__"
+	height="650">
+	<Require feature="pubsub" />
+    <Require feature="setprefs"/>
+    <Require feature="dynamic-height"/>
+	<Require feature="tabs" />
+  </ModulePrefs>
+  
+  <Content type="html">
+    <![CDATA[
+	<!-- link href="vocabularyTrainer.css" rel="stylesheet" type="text/css"></script-->
+	<!-- link href="../css/imcWidgets.css" rel="stylesheet" type="text/css" /-->
+	
+	<script type="text/javascript" src="http://www.google.com/jsapi"></script>
+	
+	<script type="text/javascript">		
+		
+		var CONTENT_URL = "http://www.learning-demo.eu/roleGadgets/gadgets/imc/translator/html/";
+			
+		var tabs = new gadgets.TabSet(__MODULE_ID__, "Translator");
+
+		google.load("language", "1");
+		
+		function init() {
+			 tabs.addTab("Translator", {
+			   contentContainer: document.getElementById("translator_tab")
+			});
+			tabs.addTab("Help", {
+			   contentContainer: document.getElementById("help_tab")
+			});		
+			
+			//load css dynamic
+       		loadCss(CONTENT_URL+"../../css/imcWidgets.css");
+       		loadCss(CONTENT_URL+"../css/translator.css");
+		
+		
+		  var src = document.getElementById('src');
+		  var dst = document.getElementById('dst');
+		  var i=0;
+		  
+		  var insertedLanguages = new Object();
+		  
+		  /*
+		  for (l in google.language.Languages) {
+			var lng = l.toLowerCase();
+			var lngCode = google.language.Languages[l];
+			if (google.language.isTranslatable(lngCode) && (lngCode=="de" || lngCode=="en")) {
+						
+			  src.options.add(new Option(lng, lngCode));
+			  dst.options.add(new Option(lng, lngCode));
+			}
+		  }
+		  */
+		  
+		  	src.options.add(new Option("english", "en"));
+			dst.options.add(new Option("deutsch", "de"));
+		
+		  google.language.getBranding('googleBranding', { type : 'vertical' });
+		
+		  //submitChange();
+		  
+		  gadgets.pubsub.subscribe("role-translator", termReceived);
+		  
+		  gadgets.window.adjustHeight();
+		}
+		
+	    function loadCss(url){  
+	    	//add salt 
+	    	//url+"#"+(new Date()).getTime();
+	    
+	    	//create and append a link node in head
+		    var headID = document.getElementsByTagName("head")[0];         
+			var cssNode = document.createElement('link');
+			cssNode.type = 'text/css';
+			cssNode.rel = 'stylesheet';
+			cssNode.href = url;
+			cssNode.media = 'screen';
+			headID.appendChild(cssNode);
+	    }
+		
+		function termReceived(sender, message) {
+			var msgObject = gadgets.json.parse(message);
+			
+			document.getElementById('source').value = msgObject.term;
+			
+			submitChange();
+		}
+
+		
+		function submitChange() {
+			var translationBody = document.getElementById("translation_body");
+			translationBody.innerHTML = "";
+			var definitionBody = document.getElementById("definition_body");
+			definitionBody.innerHTML = "";
+			var pronunciationBody = document.getElementById("pronunciation_body");
+			pronunciationBody.innerHTML = "";
+		
+		
+			//get values
+			var value = document.getElementById('source').value;
+			var src = document.getElementById('src').value;
+			var dest = document.getElementById('dst').value;
+			
+			//only submit if the term isnt empty
+			if(value != ""){	
+				//submit term to dicts
+				submitToGoogleDictTranslation(value,src,dest);
+				submitChangeToGoogleTranslation(value,src,dest);
+				submitToAonawareTranslation(value,src,dest);
+				submitToAonawareEnglish(value,src,dest);
+				submitToWikipedia(value,src,dest);
+			}
+			
+			
+			return false;
+		}
+		
+		function submitToAonawareTranslation(value,src,dest){
+			var params = {};
+			params[gadgets.io.RequestParameters.CONTENT_TYPE] = gadgets.io.ContentType.DOM;
+			params[gadgets.io.RequestParameters.METHOD] = gadgets.io.MethodType.GET;
+			
+			var dictId = getAonawareTranslationDictionaryCode(src,dest);
+			
+			var host = "services.aonaware.com";
+			var get  = "/DictService/DictService.asmx/DefineInDict?dictId="+dictId+"&word="+_esc(value);
+			
+			var url = "http://"+host+get;
+			
+			gadgets.io.makeRequest(url, aonawareTranslationHandler, params);
+		}
+		
+		function getAonawareTranslationDictionaryCode(src,dest){
+			//at the moment just care about english->german
+			return "eng-deu"
+		}
+		
+		function aonawareTranslationHandler(obj){
+			
+			var wordDefinition = obj.data.childNodes[0];
+			
+			var word = wordDefinition.childNodes[1];
+			var definitions = wordDefinition.childNodes[3];
+			
+			for(var i=0;i<definitions.childNodes.length;i++){
+			
+				var tmpNode = definitions.childNodes[i];
+			
+				if(tmpNode.nodeName == "Definition"){
+				
+					var definition = new Object();
+					
+					definition.word = tmpNode.childNodes[1].firstChild.nodeValue;
+					definition.dictionary = tmpNode.childNodes[3].childNodes[3].firstChild.nodeValue;
+					definition.wordDefinition = tmpNode.childNodes[5].firstChild.nodeValue;		
+					
+					addResultToTranslation(definition.dictionary, definition.word,definition.wordDefinition, "", "");
+				}
+			}
+		}
+		
+		function submitToAonawareEnglish(value,src,dest){
+			var params = {};
+			params[gadgets.io.RequestParameters.CONTENT_TYPE] = gadgets.io.ContentType.DOM;
+			params[gadgets.io.RequestParameters.METHOD] = gadgets.io.MethodType.GET;
+			
+			var dictId = "english";
+			
+			var host = "services.aonaware.com";
+			var get  = "/DictService/DictService.asmx/DefineInDict?dictId="+dictId+"&word="+_esc(value);
+			
+			var url = "http://"+host+get;
+			
+			gadgets.io.makeRequest(url, aonawareEnglishHandler, params);
+		}		
+		
+		function aonawareEnglishHandler(obj){
+			var wordDefinition = obj.data.childNodes[0];
+			
+			var word = wordDefinition.childNodes[1];
+			var definitions = wordDefinition.childNodes[3];
+			
+			for(var i=0;i<definitions.childNodes.length;i++){
+			
+				var tmpNode = definitions.childNodes[i];
+			
+				if(tmpNode.nodeName == "Definition"){
+				
+					var definition = new Object();
+					
+					definition.word = tmpNode.childNodes[1].firstChild.nodeValue;
+					definition.dictionary = tmpNode.childNodes[3].childNodes[3].firstChild.nodeValue;
+					definition.wordDefinition = tmpNode.childNodes[5].firstChild.nodeValue;		
+					
+					addResultToDefinition(definition.dictionary, definition.word,definition.wordDefinition, "", "");
+				}
+			}
+		}
+		
+		
+		function submitChangeToGoogleTranslation(value,src,dest){
+		  google.language.translate(value, src, dest, googleTranslationHandler);			
+		}
+		
+		function googleTranslationHandler(result){
+		  var str;
+		  
+		  if (result.translation) {
+			str = result.translation.replace('>', '&gt;').replace('<', '&lt;');
+		  } else {	  	
+			str = '<span style=\"color:red\">Error Translating</span>';
+		  }		
+		  
+		  addResultToTranslation("Google translation", "", str, "", "");
+		}
+		
+		function submitToWikipedia(value,src,dest){
+			var params = {};
+			params[gadgets.io.RequestParameters.CONTENT_TYPE] = gadgets.io.ContentType.DOM;
+			params[gadgets.io.RequestParameters.METHOD] = gadgets.io.MethodType.GET;
+			
+			var host = "en.wikipedia.org";
+			var get  = "/w/api.php?action=opensearch&format=xml&search="+_esc(value);
+			
+			var url = "http://"+host+get;
+			
+			gadgets.io.makeRequest(url, wikipediaHandler, params);
+		}
+		
+		function wikipediaHandler(obj){
+			var searchSuggestion = obj.data.childNodes[0];
+		
+			var query  = searchSuggestion.childNodes[0];
+			var section = searchSuggestion.childNodes[1];
+			
+			
+			for(var i=0;i<section.childNodes.length && i < 3;i++){
+					
+				var tmpNode = section.childNodes[i];
+						
+				if(tmpNode.nodeName == "Item"){
+				
+					var definition = new Object();
+					definition.text = "";
+					definition.description= "";
+					definition.url= "";
+					definition.imageUrl = "";
+					
+					for(var j=0;j<tmpNode.childNodes.length;j++){
+						if(tmpNode.childNodes[j].nodeName == "Text")
+							definition.text = tmpNode.childNodes[j].firstChild.nodeValue;
+						
+						if(tmpNode.childNodes[j].nodeName == "Description")
+							definition.description = tmpNode.childNodes[j].firstChild.nodeValue;
+						
+						if(tmpNode.childNodes[j].nodeName == "Url")
+							definition.url = tmpNode.childNodes[j].firstChild.nodeValue;
+						
+						if(tmpNode.childNodes[j].nodeName == "Image"){
+							definition.imageUrl = tmpNode.childNodes[j].attributes[0].nodeValue;
+						}
+					
+					}
+						
+					addResultToDefinition("Wikipedia", definition.text, 
+						definition.description, definition.url, definition.imageUrl);
+				}
+			}
+		}
+		
+		function submitToGoogleDictTranslation(value,src,dest){
+			var params = {};
+			params[gadgets.io.RequestParameters.CONTENT_TYPE] = gadgets.io.ContentType.DOM;
+			params[gadgets.io.RequestParameters.METHOD] = gadgets.io.MethodType.GET;
+			
+			//var host = "www.google.com";
+			//var get  = "/dictionary/feeds?client=ig&restrict=pr&langpair=en|de&hl=en&q="+value;
+			
+			//var url = "http://"+host+get;
+			
+			var url = createGoogleDictURL(value, "en", "de");
+			
+			gadgets.io.makeRequest(url, googleDictTranslationHandler, params);		
+		}
+		
+		function createGoogleDictURL(term, lang1, lang2) {
+			
+			lang1 = lang1 + _esc("|") + lang2;
+			var urlArray = [];
+			
+			urlArray.push("http://www.google.com/dictionary/feeds?",
+					"client=ig&restrict=pr,al&langpair=", 
+					lang1 + "&q=" + _esc(term),
+					"&hl=" + "x");
+			
+
+			return urlArray.join("")
+		}
+		
+		
+		function googleDictTranslationHandler(obj){
+		
+			//get dictionaryPage node			
+			var dictionaryPage = obj.data.childNodes[0];
+		
+			//get result node
+			var result;
+			for(var i=0;i<dictionaryPage.childNodes.length;i++){
+				if(dictionaryPage.childNodes[i].nodeName == "result")
+						result = dictionaryPage.childNodes[i];
+			}
+
+			//get primary node and sourceLanguage
+			var primary;
+			for(var i=0;i<result.childNodes.length;i++){
+				if(result.childNodes[i].nodeName == "primary")
+						primary = result.childNodes[i];
+			}
+			
+			// get source language( en  = 0)
+			var source_language = primary.attributes[0].nodeValue;
+			var query = "";
+			
+			for(var i=0;i<primary.childNodes.length && i<15 ;i++){
+	
+				var tmpNode = primary.childNodes[i];
+				
+				if(tmpNode.nodeName == "term"){
+											
+					if(tmpNode.attributes[0].nodeValue == source_language){
+						
+						var definition = new Object();
+						definition.text = query;
+						definition.description= "";
+						definition.url= "";
+						definition.imageUrl = "";
+						
+						var isPronunciation = false;
+						
+						for(var j=0;j<tmpNode.childNodes.length;j++){
+							if(tmpNode.childNodes[j].nodeName == "text")
+								definition.text = tmpNode.childNodes[j].firstChild.nodeValue;
+								
+							if(tmpNode.childNodes[j].nodeName == "PronunciationGroup"){
+								for(var l=0;l<tmpNode.childNodes[j].childNodes.length;l++){
+									if(tmpNode.childNodes[j].childNodes[l].nodeName == "text"){
+									
+										definition.description = tmpNode.childNodes[j].childNodes[l].firstChild.nodeValue;
+										isPronunciation = true;
+										
+									}
+								}
+							}
+						}	
+						
+						if(isPronunciation){		
+							addResultToPronunciation("GoogleDict", definition.text, 
+								definition.description, definition.url, definition.imageUrl);
+								
+							query = definition.text;
+						}else{
+							addResultToDefinition("GoogleDict", definition.text, 
+								definition.description, definition.url, definition.imageUrl);
+						}					
+																
+					// else it will be a translation
+					}else{
+						var definition = new Object();
+						definition.text = query;
+						definition.description= "";
+						definition.url= "";
+						definition.imageUrl = "";
+						
+						
+						for(var j=0;j<tmpNode.childNodes.length;j++){
+							if(tmpNode.childNodes[j].nodeName == "text")
+								definition.description = tmpNode.childNodes[j].firstChild.nodeValue;
+						}
+							
+						addResultToTranslation("GoogleDict", definition.text, 
+							definition.description, definition.url, definition.imageUrl);				
+					}
+				}
+			}		
+		}
+		
+		
+		
+		function addResultToTranslation(src,word,description,url,imageUrl) {
+			var resultBody = document.getElementById("translation_body");
+			addResult(src,word,description,url,imageUrl, resultBody);
+		}
+		
+		function addResultToDefinition(src,word,description,url,imageUrl) {
+			var resultBody = document.getElementById("definition_body");
+			addResult(src,word,description,url,imageUrl, resultBody);
+		}
+		
+		function addResultToPronunciation(src,word,description,url,imageUrl) {
+			var resultBody = document.getElementById("pronunciation_body");
+			addResult(src,word,description,url,imageUrl, resultBody);
+		}
+		
+		function addResult(src,word,description,url,imageUrl, resultBody){
+			
+			resultBody.innerHTML += '<span style=\"font-weight:bold;\">'+src+'</span> ';
+			
+			if(word != ""){
+				resultBody.innerHTML += '('+word+')';
+			}
+			
+			resultBody.innerHTML += ":<br/>" +description; 
+			
+			if(url != ""){
+				resultBody.innerHTML += '<br/><a href="'+ url +'" target="blank">link</a>';
+			}
+			
+			if(imageUrl != ""){
+				resultBody.innerHTML += '<br/><img src="'+ imageUrl +'" />';
+			}
+					
+			resultBody.innerHTML += "<br/><br/>";
+		}
+		
+		
+		gadgets.util.registerOnLoadHandler(init);
+			
+	</script>
+	
+	
+	<!-- TAB 1 -->
+	<div id="translator_tab" style="display:none">		
+		<div class="imc_widget_frame" style="height:630px;">			
+			
+			<!-- START CONTENT -->
+			<div class="imc_widgetContent">
+				<div id="main">
+					<form class="query-box" onsubmit="return submitChange();">
+						<label>term / sentence</label>
+						<div>
+							<div style="float:right">
+								<a 	class="text_button"
+									onClick="submitChange(); return false;">
+									<span><span style="width:100px;">Translate</span></span>
+								</a>
+							</div>
+							<div style="margin-right:115px;">
+								<input class="query-input" id="source" type="text"
+							 		autocomplete="off" value="" style="width:100%;"/>
+							 </div>
+						 </div>
+						
+						<br/>
+						<label>language</label>
+						<div>
+							<select class="imc_select" name="src" id="src"></select>
+							>>
+							<select class="imc_select" name="dst" id="dst"></select>
+						</div>
+							
+					</form>
+				</div>
+				<label>results</label>
+				<div style="height:440px; overflow:scroll; background-color: #fff; padding:5px;">
+					<div id="results">
+						<div id="pronunciation_title">Pronunciation:</div>
+					  <hr/>
+					  <div id="pronunciation_body"></div>
+					  <div id="translation_title">Translation:</div>
+					  <hr/>
+					  <div id="translation_body"></div>
+					  <div id="definition_title">Definition:</div>
+					  <hr/>
+					  <div id="definition_body"></div>
+					  <div id="branding"></div>
+					</div>
+				</div>
+			</div>
+			<!-- END CONTENT -->
+			
+		</div>
+	</div>
+	  
+	<!-- TAB 2 -->
+	<div id="help_tab" style="display:none">
+		<div class="imc_widget_frame" style="height:630px;">
+			Help is coming soon..
+		</div>
+	</div>
+	
+	<div class="imc_WidgetFooter" style="width:100%">
+			<div class="imc_WidgetFooter_Logo"></div>
+			<div class="role_WidgetFooter_Logo"></div>
+			<div id="googleBranding" style="margin:auto"></div>
+			
+			<div style="width:105px"></div>			
+	</div>
+	  ]]>
+  </Content>
+
+</Module>
