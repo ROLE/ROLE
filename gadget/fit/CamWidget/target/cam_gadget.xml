@@ -19,7 +19,6 @@
 	  					document.write('<h3> To use the CAM Widget you have to install <a href=', gears_url, ' target="_new"> gears </a> </h3>');
 	  				}
 	  				else {
-	  					//gadgets.pubsub.subscribe("random-number", callback);
 	  					gadgets.openapp.connect(callback);
 						document.write('<div>Select CAM storage Mode:</div>');
 						document.write('<div> <input type="Radio" name="selection" value="remote"> remote </input> </div>');

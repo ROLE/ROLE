@@ -21,14 +21,6 @@ function getSelection() {
 	return selection;
 }
 
-//function callback(sender, message) {
-//	var storagemode = getSelection();
-//	var message = gadgets.util.escapeString(message + "");
-//	var sender = gadgets.util.escapeString(sender);
-//	var timestamp = new Date().getTime();
-//    javascript:store(storagemode, message, sender, timestamp);
-//}
-
 // TODO how do i access envelope.date?
 function callback(envelope, message) {
 	// Filter out select events
@@ -44,25 +36,43 @@ function callback(envelope, message) {
 				var message = message[gadgets.openapp.RDF + "label"];
 				var sender = "";
 				var timestamp = new Date().getTime();
-				javascript:store(storagemode, message, sender, timestamp);
+				javascript:store(envelope.event, storagemode, message, sender, timestamp);
 			}
 		}
 	}
 }
 
 // TODO: Use correct CAM Schema
-function store(storagemode, message, sender, timestamp)
+function store(event, storagemode, message, sender, timestamp)
 {
 	if (storagemode == 'local') {
 		var db = google.gears.factory.create('beta.database');
 		db.open('database-test');
 		db.execute('create table if not exists TestCam (Storagemode text, Message text, Sender text, Timestamp int)');
 		db.execute('insert into TestCam values (?, ?, ?, ?)', [storagemode, message, sender, timestamp]); 
-		rs.close();	
+		db.close();	
 	}
 	else if (storagemode == 'remote') {
-		var params = 'storagemode=' + storagemode + '&message=' + message + '&sender=' + sender + '&timestamp=' + timestamp;
-		var url = 'http://duccio.informatik.rwth-aachen.de:9080/axis2/services/RemoteCamStorageService/storeCamToDB';
+		
+		var groupTitle = "TestUser";
+		var feedTitle = "TestFeedTitle";
+		var feedUrl = "TestFeedUrl";
+		var feedType = storagemode;
+		var itemGuid = message;
+		var eventTimestamp = timestamp;
+		var eventActiontype = event;
+		
+		var params = '';
+		params += 'groupTitle=' + groupTitle;
+		params += '&feedTitle=' + feedTitle;
+		params += '&feedUrl=' + feedUrl;
+		params += '&feedType=' + feedType;
+		params += '&itemGuid=' + itemGuid;
+		params += '&eventTimestamp=' + eventTimestamp;
+		params += '&eventActiontype=' + eventActiontype;
+		
+		//var url = 'http://duccio.informatik.rwth-aachen.de:9080/axis2/services/RemoteCamStorageService/storeCamToDB';
+		var url = 'http://duccio.informatik.rwth-aachen.de:9080/RemoteCamStorage/services/RemoteCamStorage/storeCamToDB';
 		var xmlHttp = null;
 		try {
 		      // Mozilla, Opera, Safari sowie Internet Explorer (ab v7)
@@ -70,6 +80,7 @@ function store(storagemode, message, sender, timestamp)
 		} catch(e) {
 			alert('request failed' + e);
 		}
+		
 		xmlHttp.open("GET", url + '?' + params, true); 
 		xmlHttp.send(null);
 	}
