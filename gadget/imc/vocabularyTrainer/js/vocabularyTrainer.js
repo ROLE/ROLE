@@ -48,7 +48,7 @@ VocabularyTrainer.prototype = {
 		return this.sessionWrongAnswers;
 	},
 	getSessionSuccessRate: function(){
-		return this.sessionSuccessRate;
+		return RoundToNdp(this.sessionSuccessRate,2);
 	}, 	
 	
 	
@@ -200,7 +200,7 @@ VocabularyTrainer.prototype = {
 				//create an option for each list
 				var option = document.createElement("OPTION");
 						
-				var text = this.lists[i].listName + " (items: " +this.lists[i].numberOfItems+", progress: "+this.lists[i].progress+")";
+				var text = this.lists[i].listName + " (items: " +this.lists[i].numberOfItems+", progress: "+(this.lists[i].progress*100)+"%)";
 				
 				var optionText=document.createTextNode(text);
 					
