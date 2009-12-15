@@ -20,14 +20,17 @@
   
   <Content type="html">
     <![CDATA[
-	<!-- link href="vocabularyTrainer.css" rel="stylesheet" type="text/css"></script-->
-	<!-- link href="../css/imcWidgets.css" rel="stylesheet" type="text/css" /-->
+	<link href="http://www.learning-demo.eu/roleGadgets/gadgets/imc/translator/translator.css" 
+		rel="stylesheet" type="text/css"/>
+	<link href="http://www.learning-demo.eu/roleGadgets/gadgets/imc/css/imcWidgets.css" 
+		rel="stylesheet" type="text/css" />
 	
 	<script type="text/javascript" src="http://www.google.com/jsapi"></script>
+	<script type="text/javascript" src="http://open-app.googlecode.com/files/openapp.js"></script>
 	
 	<script type="text/javascript">		
 		
-		var CONTENT_URL = "http://www.learning-demo.eu/roleGadgets/gadgets/imc/translator/html/";
+		var CONTENT_URL = "http://www.learning-demo.eu/roleGadgets/gadgets/imc/translator/";
 			
 		var tabs = new gadgets.TabSet(__MODULE_ID__, "Translator");
 
@@ -42,8 +45,8 @@
 			});		
 			
 			//load css dynamic
-       		loadCss(CONTENT_URL+"../../css/imcWidgets.css");
-       		loadCss(CONTENT_URL+"../css/translator.css");
+       		//loadCss(CONTENT_URL+"../css/imcWidgets.css");
+       		//loadCss(CONTENT_URL+"css/translator.css");
 		
 		
 		  var src = document.getElementById('src');
@@ -71,7 +74,9 @@
 		
 		  //submitChange();
 		  
-		  gadgets.pubsub.subscribe("role-translator", termReceived);
+		  //gadgets.pubsub.subscribe("role-translator", termReceived);
+		  subscribe();
+		  
 		  
 		  gadgets.window.adjustHeight();
 		}
@@ -90,14 +95,34 @@
 			headID.appendChild(cssNode);
 	    }
 		
-		function termReceived(sender, message) {
-			var msgObject = gadgets.json.parse(message);
+		
+		function subscribe(){
+			//gadgets.pubsub.subscribe("role-translator", termReceived);
+			gadgets.openapp.connect(termReceived);
 			
-			document.getElementById('source').value = msgObject.term;
-			
-			submitChange();
 		}
-
+	
+		function termReceived(envelope, message) {
+		
+			if (envelope.event === "select") {
+				
+				// Require json-properties
+				if (envelope.type === "json") {
+					// Require rdf:type to be a TermObject
+					if (message[gadgets.openapp.RDF + "type"] === "http://www.role-project.eu/rdf/TermObject") {
+						//open the add term tab
+						
+						var msgObject = 
+							gadgets.json.parse(message[gadgets.openapp.RDF + "TermObject"]);
+						
+						document.getElementById('source').value = msgObject.term;
+						
+						submitChange();
+								
+					}
+				}
+			}	
+		}		
 		
 		function submitChange() {
 			var translationBody = document.getElementById("translation_body");

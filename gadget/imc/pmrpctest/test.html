@@ -1,0 +1,40 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+
+<script src="http://wks136xp:8030/roleGadgets/gadgets/imc/pmrpctest/test-Dateien/pmrpc.js" type="text/javascript"></script>
+</head><body>
+<script type="text/javascript">
+	// Initialize tabs, designate the tab named "Two" as
+	// the tab selected by default.
+	var iframe;
+	var parameters;
+
+	function init(){ 
+	
+		var iframeId = 'textBrowserWindow';
+	
+		iframe = window.frames[0];
+		
+
+		var startTime = (new Date()).getTime();
+		
+		var parameters = {
+		  destination : iframe,
+		  publicProcedureName : "HelloPMRPC",
+		  params : {time : startTime},
+		  onSuccess : function(returnObj) {alert("Time needed"+returnObj.returnValue);},
+		  onError : function(statusObj) {alert("X"+statusObj.description);},
+		  retries : 5,
+		  timeout : 0
+		};
+	 
+		pmrpc.call(parameters);
+	}
+  
+
+</script>
+<iframe id="textBrowserWindow" name="textBrowserWindow" src="test-Dateien/pmrpc.htm"></iframe>
+<input type="button" name="Text 1" value="PMRPC"
+      onclick="init()">
+
+</body></html>

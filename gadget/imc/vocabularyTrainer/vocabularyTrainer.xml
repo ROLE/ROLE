@@ -20,8 +20,10 @@
 </ModulePrefs>
   <Content type="html" view="home,canvas,default">
   <![CDATA[ 
-  	<!--link href="css/vocabularyTrainer.css" rel="stylesheet" type="text/css" /-->
-	<!--link href="../css/imcWidgets.css" rel="stylesheet" type="text/css" /-->
+  	<link href="http://www.learning-demo.eu/roleGadgets/gadgets/imc/vocabularyTrainer/css/vocabularyTrainer.css" 
+		rel="stylesheet" type="text/css"/>
+	<link href="http://www.learning-demo.eu/roleGadgets/gadgets/imc/css/imcWidgets.css" 
+		rel="stylesheet" type="text/css" />
   	
 	<script type="text/javascript" src="http://www.google.com/jsapi"></script>
 	
@@ -30,11 +32,13 @@
 	<script type="text/javascript" src="http://www.learning-demo.eu/roleGadgets/gadgets/imc/vocabularyTrainer/js/vocabularyItemServices.js"></script>
 	<script type="text/javascript" src="http://www.learning-demo.eu/roleGadgets/gadgets/imc/vocabularyTrainer/js/vocabularyTrainer.js"></script>
 	<script type="text/javascript" src="http://www.learning-demo.eu/roleGadgets/gadgets/imc/vocabularyTrainer/js/vocabularyTrainerService.js"></script>
+	<script type="text/javascript" src="http://open-app.googlecode.com/files/openapp.js"></script>
 
 	
     <script type="text/javascript">
     
     var REST_WEB_SERVICE_URL = "http://www.learning-demo.eu/vocabularyTrainerService/rest/"
+    //var REST_WEB_SERVICE_URL = "http://localhost:8030/vocabularyTrainerService/rest/"
     var CONTENT_URL = "http://www.learning-demo.eu/roleGadgets/gadgets/imc/vocabularyTrainer/html/";
     
     var tabs = new gadgets.TabSet(__MODULE_ID__, "Login");  
@@ -59,8 +63,8 @@
 		trainerWebService = new VocabularyTrainerService(REST_WEB_SERVICE_URL);
        	
        //load css dynamic to avoid shindig caching
-       	loadCss(CONTENT_URL+"../"+"../css/imcWidgets.css");
-       	loadCss(CONTENT_URL+"../"+"css/vocabularyTrainer.css");
+       	//loadCss(CONTENT_URL+"../"+"../css/imcWidgets.css");
+       	//loadCss(CONTENT_URL+"../"+"css/vocabularyTrainer.css");
        	
        
     	//TODO: 
@@ -178,7 +182,7 @@
 		tabs.setSelectedTab(0);
 		
 		//subscribe to the channel
-		gadgets.pubsub.subscribe("role-trainer", termReceived);
+		subscribe();
 				
 		//load content		
 		loadContent(CONTENT_URL+"add.html" ,initAddContentHandler);
@@ -804,24 +808,44 @@
 
 	
 /*##############################################################################################################
-	misc
+	Inter-Widget-Communication
 ##############################################################################################################*/
 		
+	function subscribe(){
+		//gadgets.pubsub.subscribe("role-trainer", termReceived);
+		gadgets.openapp.connect(termReceived);
+		
+	}
 
-
-	function termReceived(sender, message) {
-		//open the add term tab
-		tabs.setSelectedTab(1);
+	function termReceived(envelope, message) {
 	
-		var msgObject = gadgets.json.parse(message);
-		
-		document.getElementById('newTerm').value = msgObject.term;
-		document.getElementById('newContext').value = msgObject.context;
-		document.getElementById('newSrc').value = msgObject.src;
-		
-		updateNewTerm();
+		if (envelope.event === "select") {
+			
+			// Require json-properties
+			if (envelope.type === "json") {
+				// Require rdf:type to be a TermObject
+				if (message[gadgets.openapp.RDF + "type"] === "http://www.role-project.eu/rdf/TermObject") {
+					//open the add term tab
+					tabs.setSelectedTab(1);
+					
+					var msgObject = 
+						gadgets.json.parse(message[gadgets.openapp.RDF + "TermObject"]);
+					
+					document.getElementById('newTerm').value = msgObject.term;
+					document.getElementById('newContext').value = msgObject.context;
+					document.getElementById('newSrc').value = msgObject.src;
+					
+					updateNewTerm();
+							
+				}
+			}
+		}	
 	}
 	
+/*##############################################################################################################
+	misc
+##############################################################################################################*/
+
 	function updateNewTerm(){
 		var newTerm = document.getElementById('newTerm').value;
 

@@ -13,14 +13,6 @@
 	padding-right: 5px;
 }
 
-.role_logo{
-	background:url(ROLE_logo.gif) top left no-repeat;
-	width:110px;
-	height:45px;
-	position:absolute;
-	top:-12px;
-	left:-10px;
-}
 
 .role_widgetFrame hr{
 	margin-top: 0px;
@@ -81,7 +73,7 @@
 
 .listBox{
 	display:block;
-	background:url(../images/box_small.png) no-repeat;
+	background:url(http://www.learning-demo.eu/roleGadgets/gadgets/imc/vocabularyTrainer/images/box_small.png) no-repeat;
 	position:relative; 
 	height:35px;
 	width:47px;
@@ -89,7 +81,7 @@
 
 .listBox_active{
 	display:block;
-	background:url(../images/box_active_small.png) no-repeat;
+	background:url(http://www.learning-demo.eu/roleGadgets/gadgets/imc/vocabularyTrainer/images/box_active_small.png) no-repeat;
 	position:relative; 
 	height:35px;
 	width:47px;

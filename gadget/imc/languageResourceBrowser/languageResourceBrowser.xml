@@ -19,9 +19,12 @@
   <Content type="html"><![CDATA[
 
 <script src="http://www.learning-demo.eu/roleGadgets/gadgets/imc/languageResourceBrowser/pmrpc.js" type="text/javascript"></script>
+<script type="text/javascript" src="http://open-app.googlecode.com/files/openapp.js"></script>
 
-<!--link href="languageResourceBrowser.css" rel="stylesheet" type="text/css" /-->
-<!--link href="../css/imcWidgets.css" rel="stylesheet" type="text/css" /-->
+<link href="http://www.learning-demo.eu/roleGadgets/gadgets/imc/languageResourceBrowser/languageResourceBrowser.css" 
+		rel="stylesheet" type="text/css"/>
+	<link href="http://www.learning-demo.eu/roleGadgets/gadgets/imc/css/imcWidgets.css" 
+		rel="stylesheet" type="text/css" />
 
 <script type="text/javascript">
 	// Initialize tabs, designate the tab named "Two" as
@@ -47,8 +50,8 @@
 		});
 		
 		//load css dynamic 
-      	loadCss(CONTENT_URL+"../"+"../css/imcWidgets.css");
-      	loadCss(CONTENT_URL+"../"+"languageResourceBrowser.css");
+      	//loadCss(CONTENT_URL+"../"+"../css/imcWidgets.css");
+      	//loadCss(CONTENT_URL+"../"+"languageResourceBrowser.css");
 		    
 		browseToText(document.getElementById('textURL').value);
 		browseToMedia(document.getElementById('mediaURL').value);
@@ -129,7 +132,8 @@
 		var msgJSONObject =  gadgets.json.stringify(msg);
 		
 		//send it
-		gadgets.pubsub.publish("role-trainer", msgJSONObject);
+		//gadgets.pubsub.publish("role-trainer", msgJSONObject);
+		sendSelection(msgJSONObject);
 	}
 	
 	function sendSelectionToTranslator(termId,contextId,srcId) {
@@ -144,8 +148,23 @@
 		var msgJSONObject =  gadgets.json.stringify(msg);
 		
 		//send it
-		gadgets.pubsub.publish("role-translator", msgJSONObject);
+		//gadgets.pubsub.publish("role-translator", msgJSONObject);
+		sendSelection(msgJSONObject);
 	}
+	
+	function sendSelection(msgJSONObject){
+
+		  var message = {};
+		  
+		  message[gadgets.openapp.RDF + "type"]
+		      = "http://www.role-project.eu/rdf/TermObject";  
+		      
+		  message[gadgets.openapp.RDF + "TermObject"]
+		      = msgJSONObject;
+		      
+		  gadgets.openapp.publish({type: "json"}, message);
+	}
+	
 	
 	function browseToText(url) { 
 		//select iframe
@@ -203,7 +222,8 @@
 		<div class="imc_widget_frame" style="height:630px;">
 						
 			<div class="imc_widgetContent">
-				<form id="urlForm"  onsubmit="browseToText(document.getElementById('textURL').value);  return false;">
+				<form id="urlForm" 
+					onsubmit="browseToText(document.getElementById('textURL').value); return false;">
 					<div class="navigation">
 						<div class="urlLeftControls">
 							URL:
@@ -220,7 +240,8 @@
 						</div>	
 					</div>
 				
-					<iframe id="textBrowserWindow" class="browserWindow" src="http://www.spotlight-online.de"></iframe>
+					<iframe id="textBrowserWindow" class="browserWindow" style="background:#fff"  
+						src="http://www.spotlight-online.de"></iframe>
 	                
 	                
 	                <label style="margin-left:120px">selected term</label>
@@ -252,11 +273,7 @@
 						<a 	class="text_button"
 							style="margin-right:5px;" 
 							onClick="sendSelectionToTranslator('textTerm','textContext','textSrc'); return false;">
-							<span><span>Send to Translator</span></span>
-						</a>
-						
-						<a class="text_button" onClick="sendSelectionToTrainer('textTerm','textContext','textSrc'); return false;">
-							<span><span>Send to Trainer</span></span>
+							<span><span>Send Term / Context</span></span>
 						</a>
 					</div>
 					
@@ -312,12 +329,9 @@
 	                <a class="text_button" 
 	                	style="margin-right:5px;"
 						onClick="sendSelectionToTranslator('ownTextTerm','ownTextContext','ownSource'); return false;">
-						<span><span>Send to Translator</span></span>
+						<span><span>Send Term / Context</span></span>
 					</a>
-					<a class="text_button" 
-						onClick="sendSelectionToTrainer('ownTextTerm','ownTextContext','ownSource'); return false;">
-						<span><span>Send to Trainer</span></span>
-					</a>	
+	
 	                    	
 				</div>
 			</div>
@@ -360,12 +374,9 @@
 		                <a class="text_button" 
 		                	style="margin-right:5px;"
 							onClick="sendSelectionToTranslator('mediaTerm','mediaContext','mediaURL'); return false;">
-							<span><span>Send to Translator</span></span>
+							<span><span>Send Term / Context</span></span>
 						</a>
-						<a class="text_button" 
-							onClick="sendSelectionToTrainer('mediaTerm','mediaContext','mediaURL'); return false;">
-							<span><span>Send to Trainer</span></span>
-						</a>	
+
 		                    	
 					</div>
 	
