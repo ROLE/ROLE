@@ -1,0 +1,978 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Module>
+<ModulePrefs 
+	title="Vocabulary Trainer" 
+	title_url="" 
+	description="" 
+	author="" 
+	author_email="" 
+	author_affiliation="" 
+	author_location="" 
+	category="" 
+	thumbnail="__MSG_thumbnail__" 
+	screenshot="__MSG_screenshot__" 
+	heigth="650">
+	<Require feature="pubsub"/>
+	<Require feature="tabs"/>
+	<Require feature="setprefs"/>
+	<Require feature="dynamic-height"/>
+
+</ModulePrefs>
+  <Content type="html" view="home,canvas,default">
+  <![CDATA[ 
+  	<!--link href="css/vocabularyTrainer.css" rel="stylesheet" type="text/css" /-->
+	<!--link href="../css/imcWidgets.css" rel="stylesheet" type="text/css" /-->
+  	
+	<script type="text/javascript" src="http://www.google.com/jsapi"></script>
+	
+	<script type="text/javascript" src="http://www.learning-demo.eu/roleGadgets/gadgets/imc/vocabularyTrainer/js/photoServices.js"></script>
+	<script type="text/javascript" src="http://www.learning-demo.eu/roleGadgets/gadgets/imc/vocabularyTrainer/js/webtoolkit.base64.js"></script>
+	<script type="text/javascript" src="http://www.learning-demo.eu/roleGadgets/gadgets/imc/vocabularyTrainer/js/vocabularyItemServices.js"></script>
+	<script type="text/javascript" src="http://www.learning-demo.eu/roleGadgets/gadgets/imc/vocabularyTrainer/js/vocabularyTrainer.js"></script>
+	<script type="text/javascript" src="http://www.learning-demo.eu/roleGadgets/gadgets/imc/vocabularyTrainer/js/vocabularyTrainerService.js"></script>
+
+	
+    <script type="text/javascript">
+    
+    var REST_WEB_SERVICE_URL = "http://www.learning-demo.eu/vocabularyTrainerService/rest/"
+    var CONTENT_URL = "http://www.learning-demo.eu/roleGadgets/gadgets/imc/vocabularyTrainer/html/";
+    
+    var tabs = new gadgets.TabSet(__MODULE_ID__, "Login");  
+    var numberOfDisplayedPhotos = 10;
+    var user = "";
+    var trainer;
+    var trainerWebService;
+    
+    var trainingsBucketNr;
+
+
+/*##############################################################################################################
+	initial content
+##############################################################################################################*/
+         
+    function init(){
+    	//load google translator api
+		google.load("language", "1");
+		
+		//init trainer and service
+		trainer = new VocabularyTrainer();
+		trainerWebService = new VocabularyTrainerService(REST_WEB_SERVICE_URL);
+       	
+       //load css dynamic to avoid shindig caching
+       	loadCss(CONTENT_URL+"../"+"../css/imcWidgets.css");
+       	loadCss(CONTENT_URL+"../"+"css/vocabularyTrainer.css");
+       	
+       
+    	//TODO: 
+    	//check if userdata is stored in the widget 
+    	if(false){
+    	
+    	}else{
+			tabs.addTab("Login", {
+	           contentContainer: document.getElementById("login_tab")
+	        });
+	        tabs.addTab("Register", {
+	           contentContainer: document.getElementById("register_tab")
+	        });
+	        
+    		loadContent(CONTENT_URL+"login.html",loginContentHandler);
+    		loadContent(CONTENT_URL+"register.html",registerContentHandler);	
+    	}
+    }
+    
+    function loadCss(url){  
+    	//add salt 
+    	//url+"#"+(new Date()).getTime();
+    
+    	//create and append a link node in head
+	    var headID = document.getElementsByTagName("head")[0];         
+		var cssNode = document.createElement('link');
+		cssNode.type = 'text/css';
+		cssNode.rel = 'stylesheet';
+		cssNode.href = url;
+		cssNode.media = 'screen';
+		headID.appendChild(cssNode);
+    }
+    
+    function login(username,userpassword){
+    	
+    	//save userdata global
+    	user = username;
+    	authString = "Basic " + Base64.encode(user+":"+userpassword);
+    	
+    	//set authString
+    	trainerWebService.setAuthString(authString);
+    	
+    	trainerWebService.login(loginHandler);
+    }
+     
+     function loginHandler(obj){
+     	if(!obj.data){
+     		alert("Login denied");
+     		return;
+     	}
+     
+		if(obj.data && obj.data.successMessage == "Login succesful"){	
+			//init userLists
+			trainerWebService.fetchUserLists(user,initUserListsHandler);
+			
+		}else{
+			alert("Login denied");	
+		}
+    }
+
+    function logout(){
+    	//clear globals
+		user = "";
+    	trainer = new VocabularyTrainer();
+		trainerWebService = new VocabularyTrainerService(REST_WEB_SERVICE_URL);
+
+		//remove list tab
+    	tabs.removeTab(0);
+    	//remove add tab
+    	tabs.removeTab(0);
+    	//remove train tab
+    	tabs.removeTab(0);
+    	//remove stats tab
+    	tabs.removeTab(0);
+    	//remove help tab
+    	tabs.removeTab(0);
+    	
+		tabs.addTab("Login", {
+           contentContainer: document.getElementById("login_tab")
+        });
+        tabs.addTab("Register", {
+           contentContainer: document.getElementById("register_tab")
+        });
+        
+   		loadContent(CONTENT_URL+"login.html",loginContentHandler);
+   		loadContent(CONTENT_URL+"register.html",registerContentHandler);	    	
+
+    }
+    
+    function initUserListsHandler(obj) {	
+		//set list in trainer
+		
+		if(!obj.data){
+			alert("Something went wrong");
+			return false;
+		}
+		
+		trainer.setLists(obj.data);
+		
+    	//remove login tab
+    	tabs.removeTab(0);
+    	
+    	//remove register tab
+    	tabs.removeTab(0);
+    	
+    	//init tabs
+		tabs.addTab("List", {contentContainer: document.getElementById("list_tab")});
+		tabs.addTab("Add", {contentContainer: document.getElementById("add_tab")});
+		tabs.addTab("Train", {contentContainer: document.getElementById("train_tab")});   
+        tabs.addTab("Stats", {contentContainer: document.getElementById("stats_tab")});
+        //tabs.addTab("Challance", {contentContainer: document.getElementById("challange_tab")});
+        tabs.addTab("Help", {contentContainer: document.getElementById("help_tab")});
+
+		//select list tab
+		tabs.setSelectedTab(0);
+		
+		//subscribe to the channel
+		gadgets.pubsub.subscribe("role-trainer", termReceived);
+				
+		//load content		
+		loadContent(CONTENT_URL+"add.html" ,initAddContentHandler);
+   		loadContent(CONTENT_URL+"list.html" ,initListContentHandler);
+   		loadContent(CONTENT_URL+"train.html" ,initTrainContentHandler);
+   		loadContent(CONTENT_URL+"stats.html" ,initStatsContentHandler);
+   		loadContent(CONTENT_URL+"help.html" ,initHelpContentHandler);		
+	} 
+ 
+    function loadContent(url, contentHandler){   
+		var params = {};
+		params[gadgets.io.RequestParameters.CONTENT_TYPE] = gadgets.io.ContentType.TEXT;
+		params[gadgets.io.RequestParameters.METHOD] = gadgets.io.MethodType.GET;
+		params[gadgets.io.RequestParameters.REFRESH_INTERVAL] =0;	
+
+		//add salt vs caching
+		//url= url +"#"+(new Date()).getTime();
+
+		gadgets.io.makeRequest(url, contentHandler, params);     
+    }  
+  
+	function loginContentHandler(obj){
+		var html = obj.text;
+		document.getElementById('login_content').innerHTML = html;
+		
+		gadgets.window.adjustHeight();	
+	}    
+	
+	function registerContentHandler(obj){
+		var html = obj.text;
+		document.getElementById('register_content').innerHTML = html;
+		
+		gadgets.window.adjustHeight();	
+	} 	
+	
+	function initAddContentHandler(obj){
+		var html = obj.text;
+		document.getElementById('add_content').innerHTML = html; 
+		
+		trainer.registerListSelect("addSelectLists"); 
+		
+		gadgets.window.adjustHeight();	
+	
+	}
+
+	function initListContentHandler(obj){
+		var html = obj.text;
+		document.getElementById('list_content').innerHTML = html;
+
+		trainer.registerListSelect("listSelectLists");
+	
+		//update the list of items with list 0
+		updateListContent(0);		
+				
+		gadgets.window.adjustHeight();	
+	}
+
+	function initTrainContentHandler(obj){	
+		var html = obj.text;
+		document.getElementById('train_content').innerHTML = html;	
+		
+		trainer.registerListSelect("trainSelectLists");
+		updateTrainContent(0);
+		
+		gadgets.window.adjustHeight();
+							
+	}
+	
+	function initStatsContentHandler(obj){
+		var html = obj.text;
+		document.getElementById('stats_content').innerHTML = html; 	
+		
+		trainer.registerListSelect("statsSelectLists"); 
+		updateScores();
+		updateListScore(0);
+		
+		
+		gadgets.window.adjustHeight();
+	}
+
+	function initHelpContentHandler(obj){
+		var html = obj.text;
+		document.getElementById('help_content').innerHTML = html; 	
+		
+		gadgets.window.adjustHeight();
+	}  
+	
+/*##############################################################################################################
+	update content
+##############################################################################################################*/	
+    
+    function updateUserLists(){
+    	trainerWebService.fetchUserLists(user,updateUserListsHandler);
+    }
+
+	function updateUserListsHandler(obj) {
+		
+		//set list in trainer
+		trainer.setLists(obj.data);
+		
+		//update all information
+		updateListContent(0);
+		updateTrainContent(0);
+		updateScores();
+		updateListScore(0);
+		trainer.updateListsSelects();
+		
+	}    
+
+	function updateListContent(listPos){
+
+		var currentList = trainer.getList(listPos);
+		
+		if(currentList != null){
+			
+			var currentListId = currentList.listId;
+	  	
+	  		trainerWebService.fetchUserItems(user,currentListId,updateListContentHandler);	
+		}	
+		
+		//update language
+		document.getElementById("listSourceLanguage").innerHTML = currentList.sourceLanguage;
+		document.getElementById("listTargetLanguage").innerHTML = currentList.targetLanguage;
+		
+		//update boxes
+		document.getElementById("listItemsInBoxAll").innerHTML = currentList.numberOfItems;
+		document.getElementById("listItemsInBox1").innerHTML = currentList.bucket1.numberOfItems;
+		document.getElementById("listItemsInBox2").innerHTML = currentList.bucket2.numberOfItems;
+		document.getElementById("listItemsInBox3").innerHTML = currentList.bucket3.numberOfItems;
+		document.getElementById("listItemsInBox4").innerHTML = currentList.bucket4.numberOfItems;
+		document.getElementById("listItemsInBox5").innerHTML = currentList.bucket5.numberOfItems;
+		
+	}
+
+	function updateListContentHandler(obj){
+		
+		trainer.setCurrentListViewItems(obj.data);	
+		trainer.pushVItemsIntoTable(trainer.getCurrentListViewItems(),"vItemTable",0);
+		listChangeListBox(0);
+	}
+
+	function updateTrainContent(listPos){
+
+		//get the list from the trainer
+		var currentList = trainer.getList(listPos);
+		
+		//update scores
+		document.getElementById("trainScore").innerHTML = currentList.score;
+		document.getElementById("trainProgress").innerHTML = (currentList.progress*100)+"%";
+		document.getElementById("trainCorrectAnswers").innerHTML = currentList.correctAnswers;
+		document.getElementById("trainWrongAnswers").innerHTML = currentList.wrongAnswers;
+		document.getElementById("trainSuccessRate").innerHTML = (currentList.successRate*100)+"%";
+				
+		//update boxes
+		document.getElementById("trainItemsInBox1").innerHTML = currentList.bucket1.numberOfItems;
+		document.getElementById("trainItemsInBox2").innerHTML = currentList.bucket2.numberOfItems;
+		document.getElementById("trainItemsInBox3").innerHTML = currentList.bucket3.numberOfItems;
+		document.getElementById("trainItemsInBox4").innerHTML = currentList.bucket4.numberOfItems;
+		document.getElementById("trainItemsInBox5").innerHTML = currentList.bucket5.numberOfItems;
+		
+	}
+	
+	function updateScores(){
+			
+		trainerWebService.fetchUserScore(user,updateScoresHandler);
+		
+	}
+
+	function updateScoresHandler(obj){
+	
+		//if we didnt get an error message we show the score
+		if(!obj.data.errorMessage){
+			document.getElementById("globalCorrectAnswers").innerHTML = obj.data.correctAnswers;
+			document.getElementById("globalWrongAnswers").innerHTML = obj.data.wrongAnswers;
+			document.getElementById("globalSuccessRate").innerHTML = (obj.data.successRate*100)+"%";
+		} 
+	}
+	
+	function updateListScore(listPos){
+		var currentList = trainer.getList(listPos);
+		
+		document.getElementById("listScore").innerHTML = currentList.score;
+		document.getElementById("listProgress").innerHTML = (currentList.progress*100)+"%";
+		document.getElementById("listCorrectAnswers").innerHTML = currentList.correctAnswers;
+		document.getElementById("listWrongAnswers").innerHTML = currentList.wrongAnswers;
+		document.getElementById("listSuccessRate").innerHTML = (currentList.successRate*100)+"%";
+		
+	}
+/*##############################################################################################################
+	register
+##############################################################################################################*/	
+	function registerNewUser(){
+	
+		var newUserName = document.getElementById("registerUsername").value;
+		var newEmail = document.getElementById("registerEmail").value;
+		var newRetypeEmail = document.getElementById("registerRetypeEmail").value;
+		var newPassword = document.getElementById("registerPassword").value;
+		var newRetypePassword = document.getElementById("registerRetypePassword").value;
+		
+		if(newPassword != newRetypePassword){
+			alert("Password is not equal.")
+			return false;
+		}
+		
+		if(newUserName == ""){
+			alert("Username is empty.")
+			return false;
+		}	
+		
+		//trainerWebService.registerUser(newUserName,newEmail,newPassword,registerNewUserHandler);
+		
+		//prepare parameter
+		var params = {};
+		params[gadgets.io.RequestParameters.CONTENT_TYPE] = gadgets.io.ContentType.JSON;
+		params[gadgets.io.RequestParameters.METHOD] = gadgets.io.MethodType.POST;
+		params[gadgets.io.RequestParameters.REFRESH_INTERVAL] =0;
+		params[gadgets.io.RequestParameters.POST_DATA] = gadgets.io.encodeValues({
+			userName : newUserName,
+			email : newEmail,
+			password : newPassword
+			});	
+
+		//add salt vs caching
+		var url= REST_WEB_SERVICE_URL+"user#"+(new Date()).getTime();
+		
+		gadgets.io.makeRequest(url, registerNewUserHandler, params); 	
+	
+	}
+	
+	
+	function registerNewUserHandler(obj){
+		
+		if(!obj.data.errorMessage){
+			alert("User created");
+			tabs.setSelectedTab(0);
+				
+		}else{
+			alert("Username already exists");
+		}
+				
+		
+	}
+
+/*##############################################################################################################
+	training
+##############################################################################################################*/
+
+	function trainChangeListBox(listNr){
+		
+		document.getElementById("trainCurrentBucket").value = listNr;
+		
+		document.getElementById("trainBoxImage1").className = "listBox";
+		document.getElementById("trainBoxImage2").className = "listBox";
+		document.getElementById("trainBoxImage3").className = "listBox";
+		document.getElementById("trainBoxImage4").className = "listBox";
+		document.getElementById("trainBoxImage5").className = "listBox";
+		
+		switch (listNr) {
+		  case 1:
+			document.getElementById("trainBoxImage1").className = "listBox_active";
+		    break;
+		  case 2:
+			document.getElementById("trainBoxImage2").className = "listBox_active";
+		    break;
+		  case 3:
+			document.getElementById("trainBoxImage3").className = "listBox_active";
+		    break;
+		  case 4:
+			document.getElementById("trainBoxImage4").className = "listBox_active";
+			break;
+		  case 5:
+			document.getElementById("trainBoxImage5").className = "listBox_active";
+			break;
+		  default:
+		    break;
+		}
+		
+	}
+    
+    function startTraining(listPos,bucketNr){
+    
+    	//check if a bucket was choosen
+    	if(bucketNr == 0){
+    		alert("You can't train with all items. Please choose a bucket!");
+    		return false;
+    	}
+    	
+    	trainer.setCurrentTrainingBucketNumber(bucketNr);
+    	
+    	var currentList = trainer.getList(listPos);
+    	
+    	//check if we try to train with an empty bucket
+    	var bucket = currentList["bucket"+bucketNr];
+    	if(bucket.numberOfItems == 0){
+    		alert("You can't train with an empty bucket!");
+    		return false;
+    	}
+    	
+    	tabs.setSelectedTab(2);
+    	
+    	var currentListId = currentList.listId;
+    	
+    	document.getElementById("trainingListName").innerHTML=currentList.listName;
+        
+    	//activate training view
+    	document.getElementById("stoppedTraining").style.display = "none"; 
+    	document.getElementById("startedTraining").style.display = "block";
+    	
+    	document.getElementById("trainingBucketNumber").innerHTML=bucketNr;
+    	document.getElementById("trainingBucketNumberItems").innerHTML = "";
+
+		trainerWebService.fetchUserItems (user,currentListId,startTrainingHandler);
+    }
+    
+    function startTrainingHandler(obj){
+    	trainer.setCurrentTrainingItems(obj.data); 	
+    	updateTrainingSession();
+    }
+    
+    function updateTrainingSession(){
+ 
+ 		document.getElementById("sessionCorrectAnswers").innerHTML = trainer.getSessionCorrectAnswers();
+		document.getElementById("sessionWrongAnswers").innerHTML = trainer.getSessionWrongAnswers();
+		document.getElementById("sessionSuccessRate").innerHTML = trainer.getSessionSuccessRate();   
+    
+    	var trainingsItem = trainer.getNextTrainingItem();
+    	document.getElementById("trainingAnswer").value = "";
+    	
+    	if(trainingsItem == null){
+    		var trainingBucketNumber = trainer.getCurrentTrainingBucketNumber();
+    		var numberOfItems = trainer.getCurrentTrainingItems()[trainingBucketNumber-1].length;
+    		
+    		alert("You finished this session with bucket "+trainingBucketNumber+" ("+numberOfItems+ " items)!");
+    		stopTraining();
+    		
+    		return;
+    	}
+    	
+    	document.getElementById("trainingTerm").value=trainingsItem.term;
+    	document.getElementById("trainingContext").innerHTML=trainingsItem.contexts[0].context;
+    }
+    
+    function checkTerm(skip){
+    	var trainingsItem = trainer.getNextTrainingItem();
+    
+    	if(!skip){
+    		if( trainer.isAnswerCorrectForTrainingItem( document.getElementById("trainingAnswer").value ) ){
+    			alert("RIGHT!" );
+    			
+    			trainerWebService.transmitTrainedItem(user,trainingsItem.itemId,true,null);
+    		}else{
+    			alert("False. The right answer is in this contest: "+trainingsItem.term+":"+trainingsItem.translations[0].translation  );
+    			
+    			trainerWebService.transmitTrainedItem(user,trainingsItem.itemId,false,null);
+    		}
+    	}else{
+    		trainer.isAnswerCorrectForTrainingItem("");
+    		alert("You skipped. The right answer is in this contest: "+trainingsItem.term+":"+trainingsItem.translations[0].translation  );
+    		trainerWebService.transmitTrainedItem(user,trainingsItem.itemId,false,null);
+    	}
+    	
+    	updateTrainingSession();
+    } 
+
+	function showNextLetter(){	
+	
+		var firstLetters = trainer.getNextTrainingItemLetters();
+		
+		document.getElementById("trainingAnswer").value = firstLetters;
+	}
+	
+	function showTrainingImage(){
+		var trainingsItem = trainer.getNextTrainingItem();
+		
+		//check if item has some images
+		if(trainingsItem.images.length == 0){
+			alert("Sorry this item has no images");
+			return false;
+		}
+		
+		var imageUrl = trainingsItem.images[0].imageURL;
+		
+		openPopup(imageUrl,true,400,300); 
+	}
+
+    function stopTraining(){
+    	
+    	//deactivate training view
+    	document.getElementById("startedTraining").style.display = "none";
+    	document.getElementById("stoppedTraining").style.display = "block";
+    	
+    	//update lists
+    	updateUserLists();
+    }
+    
+	
+
+	
+/*##############################################################################################################
+	list
+##############################################################################################################*/
+	
+	function listChangeListBox(bucketNumber){
+		
+		trainer.pushVItemsIntoTable(trainer.getCurrentListViewItems(),"vItemTable",bucketNumber);
+		
+		document.getElementById("listCurrentBucket").value = bucketNumber;
+		
+		document.getElementById("boxImage0").className = "listBox";
+		document.getElementById("boxImage1").className = "listBox";
+		document.getElementById("boxImage2").className = "listBox";
+		document.getElementById("boxImage3").className = "listBox";
+		document.getElementById("boxImage4").className = "listBox";
+		document.getElementById("boxImage5").className = "listBox";
+		
+		switch (bucketNumber) {
+		  case 0:
+			document.getElementById("boxImage0").className = "listBox_active";
+			break;
+		  case 1:
+			document.getElementById("boxImage1").className = "listBox_active";
+		    break;
+		  case 2:
+			document.getElementById("boxImage2").className = "listBox_active";
+		    break;
+		  case 3:
+			document.getElementById("boxImage3").className = "listBox_active";
+		    break;
+		  case 4:
+			document.getElementById("boxImage4").className = "listBox_active";
+			break;
+		  case 5:
+			document.getElementById("boxImage5").className = "listBox_active";
+			break;
+		  default:
+		    break;
+		}
+	}
+
+
+	function deleteList(listPos){
+	
+		//its not allowed to delete the last list
+		if(trainer.getNumberOfLists() == 1){
+			alert("You are trying to delete your only list. At least one list is necessary.");
+			return false;
+		}
+	
+	
+		var currentList = trainer.getList(listPos);
+		var listId = currentList.listId;
+		
+		trainerWebService.deleteList(listId,deleteListHandler);
+		
+	}
+	
+	function deleteListHandler(obj){
+		updateUserLists();
+	}
+
+	function openCreateList(){
+		loadContent(CONTENT_URL+'createList.html',createListContentHandler);
+	}
+	
+	function createListContentHandler(obj){
+		var createListWindow =window.open('','name','height=300,width=300');
+		var tmp = createListWindow.document;
+		tmp.write(obj.text);
+    
+    	//create and append a link node in head
+	    var headID = tmp.getElementsByTagName("head")[0];         
+		var cssNode = tmp.createElement('link');
+		cssNode.type = 'text/css';
+		cssNode.rel = 'stylesheet';
+		cssNode.href = CONTENT_URL+"../"+"../css/imcWidgets.css";
+		cssNode.media = 'screen';
+		headID.appendChild(cssNode);
+		
+		//create and append a link node in head
+	    var headID = tmp.getElementsByTagName("head")[0];         
+		var cssNode = tmp.createElement('link');
+		cssNode.type = 'text/css';
+		cssNode.rel = 'stylesheet';
+		cssNode.href = CONTENT_URL+"../"+"css/vocabularyTrainer.css";
+		cssNode.media = 'screen';
+		headID.appendChild(cssNode);
+	}
+	
+	function createNewList(listName,sourceLanguage,targetLanguage){
+
+		var list = new Object();
+		list.listName = listName;
+		list.sourceLanguage = sourceLanguage;
+		list.targetLanguage = targetLanguage;
+		list.listId = 0;
+		list.numberOfItems = 0;
+
+		var listString = gadgets.json.stringify(list);
+	
+		trainerWebService.createNewList(user,listString,createNewListHandler);
+	}
+	
+	function createNewListHandler(obj){
+		updateUserLists();
+	}
+	
+
+/*##############################################################################################################
+	add items
+##############################################################################################################*/
+	
+	function addVocabularyItemToDB(listPos){
+	
+		var tmpCurrentList = trainer.getList(listPos);
+		var listId = tmpCurrentList.listId;
+	
+		var item = new Object();
+	
+		//add term
+		item.itemId = 0;
+		item.term = document.getElementById("newTerm").value;
+		
+		if(item.term == ""){
+			alert("You cannot add an empty term!");
+		}
+		
+		//create context
+		item.contexts = new Array();
+		 
+		//create translations
+		item.translations = new Array();
+		
+		//create images
+		item.images = new Array();	
+		
+		//add context
+		var context = new Object();
+		context.contextId = 0;
+		context.context = document.getElementById("newContext").value;
+		context.source = document.getElementById("newSrc").value;			
+		item.contexts.push(context);
+		
+		//add translations and images
+		var message = "Your chose:\n\n";
+		var form = document.getElementById("addForm");
+
+		//check if the own translation is checked
+		if(document.getElementById("ownTranslationCheckbox").checked){
+	      	var ownTranslationText = document.getElementById("ownTranslationInput").value;
+	      	var tmpTranslation = new Object();
+	      	tmpTranslation.translationId = 0;
+	      	tmpTranslation.translation = ownTranslationText;
+	      	item.translations.push(tmpTranslation);		
+		}
+
+
+	   //For each checkbox see if it has been checked, and push the translation into the array
+	   for (i = 0; i < form.translations.length; i++){
+	      if (form.translations[i].checked){
+	      	var tmpTranslation = new Object();
+	      	tmpTranslation.translationId = 0;
+	      	tmpTranslation.translation = form.translations[i].value;
+	      	item.translations.push(tmpTranslation);
+	      }		
+	   }
+	   
+	   if(item.translations.length == 0){
+	 	alert("You have check at least one translation");
+	 	return false;
+	   }
+	  
+	   //For each checkbox see if it has been checked, and push the image into the array
+	   for (i = 0; i < form.suggestedImages.length; i++){
+	      if (form.suggestedImages[i].checked){
+	      	var tmpImage = new Object();
+	      	tmpImage.imageId = 0;
+	      	tmpImage.imageURL  = form.suggestedImages[i].value;
+	      	item.images.push(tmpImage);
+	      }		
+	   }
+		
+		var itemString = gadgets.json.stringify(item);
+	  	
+	  	trainerWebService.addItem(listId,itemString,addVocabularyItemToDBHandler);
+	}
+	
+	function addVocabularyItemToDBHandler(obj){
+		updateUserLists();
+	}
+
+/*##############################################################################################################
+	delete items
+##############################################################################################################*/
+	
+	function deleteVocabularyItemFromDB(listPos){
+		var tmpCurrentList = trainer.getList(listPos);
+		var listId = tmpCurrentList.listId;
+		
+		var form = document.getElementById("listForm");
+		
+		//because of bug get the first item per getElementById
+		var firstItemCheckbox = document.getElementById("firstItemInList");
+		if(firstItemCheckbox.checked){var params = {}; 
+		
+			var tmpItemId = firstItemCheckbox.value;
+			
+			trainerWebService.deleteItem(listId,tmpItemId,deleteVocabularyItemFromDBHandler);
+		}
+	
+		for (i = 0; i < form.itemIds.length; i++){
+	      if (form.itemIds[i].checked){
+	      	var tmpItemId  = form.itemIds[i].value;
+			
+			trainerWebService.deleteItem(listId,tmpItemId,deleteVocabularyItemFromDBHandler);
+	      }		
+	   }
+	
+	}
+	
+	function deleteVocabularyItemFromDBHandler(obj){
+		updateUserLists();
+	}
+
+	
+/*##############################################################################################################
+	misc
+##############################################################################################################*/
+		
+
+
+	function termReceived(sender, message) {
+		//open the add term tab
+		tabs.setSelectedTab(1);
+	
+		var msgObject = gadgets.json.parse(message);
+		
+		document.getElementById('newTerm').value = msgObject.term;
+		document.getElementById('newContext').value = msgObject.context;
+		document.getElementById('newSrc').value = msgObject.src;
+		
+		updateNewTerm();
+	}
+	
+	function updateNewTerm(){
+		var newTerm = document.getElementById('newTerm').value;
+
+		if(newTerm != ""){
+			getPhotosFromFlickr(newTerm, numberOfDisplayedPhotos);
+			
+			clearTranslationList();
+			submitToGoogleDictTranslation(newTerm,"","");
+			submitChangeToGoogleTranslation(newTerm,"en","de");
+		}
+	}
+	
+	function clearTranslationList(){
+		var translationList = document.getElementById("translationList");
+	
+		translationList.innerHTML = '<li><input id="ownTranslationCheckbox" type="checkbox"/><input id="ownTranslationInput" name="newTerm" type="text" /></li><input style="display:none" type="checkbox" name="translations" value=""/>';
+	}
+	
+	function addResultToTranslation(source, text, description, url, imageUrl){
+			var ul = document.getElementById("translationList");
+		
+			var li = document.createElement("li");
+			ul.appendChild(li);
+			
+			var input = document.createElement("input");
+			input.name = "translations";
+			input.type = "checkbox";
+			input.setAttribute("value",description);
+			li.appendChild(input);
+			
+			var textNode = document.createTextNode(description);
+			li.appendChild(textNode);		
+	}	
+
+	function openPopup(htmlPage,absolutePath,height,width) {
+		
+		var popup;
+	
+		if(absolutePath){
+			popup = window.open(htmlPage, "", "width="+height+",height="+width+",status=yes,scrollbars=no,resizable=no");
+		}else{
+	 		popup = window.open(CONTENT_URL+htmlPage, "", "width="+height+",height="+width+",status=yes,scrollbars=no,resizable=no");
+	 	}
+	 		popup.focus();
+	}
+
+    // Call init function to initialize and display tabs.
+    gadgets.util.registerOnLoadHandler(init);
+	
+
+    </script>
+
+	<!--a class="text_button" id="logoutButton" style="position:absolute; top:25px; right:5px;"
+		onClick="logout(); return false;">
+		<span><span style="width:100px;">Logout</span></span>
+	</a-->
+
+	<div id="login_tab" style="display:none;">
+		<div class="imc_widget_frame" style="height:630px;">
+							
+			<!-- START CONTENT -->
+			<div class="imc_widgetContent">
+				<div id="login_content">
+				</div>
+			</div>
+			<!-- END CONTENT -->
+			
+		</div>
+	</div>
+	
+	<div id="register_tab" style="display:none;">
+		<div class="imc_widget_frame" style="height:630px;">
+							
+			<!-- START CONTENT -->
+			<div class="imc_widgetContent">
+				<div id="register_content">
+				</div>
+			</div>
+			<!-- END CONTENT -->
+			
+		</div>
+	</div>	
+	
+	<div id="add_tab" style="display:none;">
+		<div class="imc_widget_frame" style="height:630px;">
+							
+			<!-- START CONTENT -->
+			<div class="imc_widgetContent">
+				<div id="add_content"></div>
+			</div>
+			<!-- END CONTENT -->
+			
+		</div>
+	</div>
+
+	<div id="list_tab" style="display:none;">
+		<div class="imc_widget_frame" style="height:630px;">
+							
+			<div class="imc_widgetContent">
+				<!-- START CONTENT -->
+				<div id="list_content"></div>
+				<!-- END CONTENT -->
+			</div>
+			
+		</div>		
+	</div>
+	
+	
+   <div id="train_tab" style="display:none">
+		<div class="imc_widget_frame" style="height:630px;">					
+			
+			<div class="imc_widgetContent">
+				<!-- START CONTENT -->
+				<div id="train_content"></div>	
+				<!-- END CONTENT -->
+			</div>
+								
+		</div>  
+   </div>
+   
+   
+   
+   <div id="stats_tab" style="display:none">
+		<div class="imc_widget_frame" style="height:630px;">		
+					
+			<div class="imc_widgetContent">
+				<!-- START CONTENT -->
+				<div id="stats_content"></div>
+				<!-- END CONTENT -->
+			</div>
+						
+        </div>
+		
+		<div id="help_tab" style="display:none">
+			<div class="imc_widget_frame" style="height:630px;">							
+				<div class="imc_widgetContent">
+					<!-- START CONTENT -->
+					<div id="help_content">
+
+					</div>
+				</div>
+			</div>
+		</div>	        
+
+    </div>
+	<div class="imc_WidgetFooter" style="width:100%">
+			<div class="imc_WidgetFooter_Logo"></div>
+			<div class="role_WidgetFooter_Logo"></div>
+			<div style="width:105px"></div>			
+	</div>
+  ]]>
+  </Content>
+
+</Module>
