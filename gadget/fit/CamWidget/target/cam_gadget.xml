@@ -3,6 +3,7 @@
     <ModulePrefs
             title="Cam Widget">
         <Require feature="pubsub" />
+        <Require feature="dynamic-height" />
     </ModulePrefs>
     <Content type="html"><![CDATA[<form name="camform">
 	    		<script src="./gears_init.js"></script>
