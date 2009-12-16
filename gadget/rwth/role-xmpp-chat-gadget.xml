@@ -6,13 +6,13 @@
 	author="Dominik Renzel, Chair of Computer Science 5, RWTH Aachen University, Germany"
 	author_email="renzel@dbis.rwth-aachen.de"
 	height="400"
+	width="500"
 	>
-	<Require feature="opensocial-0.8"/>
+	<Require feature="pubsub"/>
+	<Require feature="setprefs"/>
+	<Require feature="dynamic-height"/>
+	<Require feature="settitle"/>
 </ModulePrefs>
-
-<UserPref name="username" display_name="Username" urlparam="username" default_value="foo" required="true" />
-<UserPref name="domain" display_name="Domain" urlparam="domain" default_value="role.dbis.rwth-aachen.de" required="true" />
-<UserPref name="resource" display_name="Resource" urlparam="resource" default_value="role-xmpp-gadget" required="true" />
 
 <Content type="html">
 <![CDATA[
@@ -24,7 +24,6 @@
 	html,body {
 				width: 100%;
 				height: 100%;
-				
 			}
 			
 			.dijitSplitPane{
@@ -67,8 +66,16 @@
 			<table>
 				<tr>	<td colspan="2=>Try the ROLE XMPP Chat with your ROLE XMPP Server account or with the demo account "foo" (password "bar").</td></tr>
 				<tr>
+					<td><label for="loc">Domain: </label></td>
+					<td><input dojoType="dijit.form.TextBox" type="text"  id="xmpp_domain" value="role.dbis.rwth-aachen.de"></td>
+				</tr>
+				<tr>
+					<td><label for="loc">Login: </label></td>
+					<td><input dojoType="dijit.form.TextBox" type="text"  id="xmpp_username" value=""></td>
+				</tr>
+				<tr>
 					<td><label for="loc">Password: </label></td>
-					<td><input dojoType="dijit.form.TextBox" type="password"  id="loginPassword" value="bar"></td>
+					<td><input dojoType="dijit.form.TextBox" type="password"  id="xmpp_password" value=""></td>
 				</tr>
 				<tr>
 					<td colspan="2" align="center">
