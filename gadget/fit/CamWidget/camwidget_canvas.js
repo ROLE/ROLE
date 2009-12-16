@@ -25,10 +25,10 @@ function getSelection() {
 function callback(envelope, message) {
 	// Filter out select events
 	var storagemode = getSelection();
-	var messageLabel = envelope.message[gadgets.openapp.RDF + "label"];
-	var messageTerm = envelope.message[gadgets.openapp.RDF + "term"];
-	var messageContext = envelope.message[gadgets.openapp.RDF + "context"];
-	var messageSrc = envelope.message[gadgets.openapp.RDF + "source"];
+	var messageLabel = message["http://www.role-project.eu/rdf/words/label"];
+	var messageTerm = message["http://www.role-project.eu/rdf/words/term"];
+	var messageContext = message["http://www.role-project.eu/rdf/words/context"];
+	var messageSrc = message["http://www.role-project.eu/rdf/words/source"];
 	var timestamp = new Date().getTime();
 	var actionType = envelope.event;
 	javascript:store(actionType, storagemode,  messageLabel, messageTerm, messageContext, messageSrc, timestamp);
