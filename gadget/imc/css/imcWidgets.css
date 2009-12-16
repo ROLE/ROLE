@@ -26,7 +26,7 @@ a img{
 	font-family: Verdana;
 	font-size: 11px;
 	color: #333333;
-	background: url('../images/general/main_bg_alternative.png') no-repeat top left;
+	background: url('http://www.learning-demo.eu/roleGadgets/gadgets/imc/images/general/main_bg_alternative.png') no-repeat top left;
 	height: 100%;
 	position: relative;
 }
@@ -64,7 +64,7 @@ table th {
 	padding: 5px 0 0 4px;
 	text-align: left;
 	
-	background: transparent url(../images/table/tablehead_p.png) repeat-x;
+	background: transparent url(http://www.learning-demo.eu/roleGadgets/gadgets/imc/images/table/tablehead_p.png) repeat-x;
 	table-layout: 
 }
 
