@@ -24,23 +24,40 @@ function getSelection() {
 // TODO how do i access envelope.date?
 function callback(envelope, message) {
 	// Filter out select events
-	if (envelope.event === "select") {
+	var storagemode = getSelection();
+	var messgeString = envelope.message[gadgets.openapp.RDF + "label"];
+	var sender = "";
+	var timestamp = new Date().getTime();
+	var actionType = envelope.event;
+	javascript:store(actionType, storagemode, messgeString, sender, timestamp);
+}
+
+//function callback(envelope, message) {
+	// Filter out select events
+	//var envelopeString = gadgets.json.stringify(envelope);
+	//var envelopeObject = eval('(' + test + ')');
+	//alert(myObject.event);
+	//alert(myObject.message[gadgets.openapp.RDF + "label"]);
+	
+	
+	//if (envelope.event === "select") {
 		// Require namespaced-properties
-		if (envelope.type === "namespaced-properties") {
+		//if (envelope.type === "namespaced-properties") {
 			// Require rdf:type to be a word
-			if (message[gadgets.openapp.RDF + "type"] === "http://example.com/rdf/Word") {
+			//if (message[gadgets.openapp.RDF + "type"] === "http://example.com/rdf/Word") {
 				//var item = document.createElement("div");
 				//item.appendChild(document.createTextNode(message[gadgets.openapp.RDF + "label"]));
 				//document.getElementById("output").appendChild(item);
-				var storagemode = getSelection();
-				var message = message[gadgets.openapp.RDF + "label"];
-				var sender = "";
-				var timestamp = new Date().getTime();
-				javascript:store(envelope.event, storagemode, message, sender, timestamp);
-			}
-		}
-	}
-}
+				//var storagemode = getSelection();
+				//var mes = envelope.message[gadgets.openapp.RDF + "label"];
+				//var sender = "";
+				//var timestamp = new Date().getTime();
+				//var actionType = envelope.event;
+				//javascript:store(actionType, storagemode, mes, sender, timestamp);
+			//}
+		//}
+	//}
+//}
 
 // TODO: Use correct CAM Schema
 function store(event, storagemode, message, sender, timestamp)
