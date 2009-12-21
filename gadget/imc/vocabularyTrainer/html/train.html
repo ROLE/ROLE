@@ -2,8 +2,8 @@
 			<div class="role_widget_part">
 				<label>Select a list to train:</label>
 				<select id="trainSelectLists" name="trainSelectLists" style="width:100%" class="imc_select"
-						onChange="updateTrainContent(getElementById('trainSelectLists').options[getElementById('trainSelectLists').selectedIndex].value)">>
-					<option name=one value=one>default list (items: 109, progress: 70%)</option>
+						onChange="updateTrainContent(getElementById('trainSelectLists').options[getElementById('trainSelectLists').selectedIndex].value)">
+					<option value=one>default list (items: 109, progress: 70%)</option>
 				</select>
 			</div>
 			<div class="role_widget_part;">
@@ -79,7 +79,7 @@
 				<label>Current List</label>
 				<div id="trainingListName"></div>
 				<div style="position:relative; float:left">
-					<a href="#" class="listBox_active" return false;"></a>
+					<a href="#" class="listBox_active" onClick="return false;"></a>
 					<div id="trainingBucketNumber" style="position:absolute; left:3px; top:11px; font-size:14px; font-weight:bold" >1</div>
 					<div style="text-align:center" id="trainingBucketNumberItems">52</div>
 				</div>

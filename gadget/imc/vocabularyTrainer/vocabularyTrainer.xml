@@ -3,15 +3,15 @@
 <ModulePrefs 
 	title="Vocabulary Trainer" 
 	title_url="" 
-	description="" 
-	author="" 
-	author_email="" 
+	description="A simple vovabulary trainer" 
+	author="Daniel Dahrendorf" 
+	author_email="daniel.dahrendorf@im-c.de" 
 	author_affiliation="" 
-	author_location="" 
-	category="" 
+	author_location="Germany" 
+	category="education" 
 	thumbnail="__MSG_thumbnail__" 
 	screenshot="__MSG_screenshot__" 
-	heigth="650">
+	height="650">
 	<Require feature="pubsub"/>
 	<Require feature="tabs"/>
 	<Require feature="setprefs"/>
@@ -40,6 +40,7 @@
     var REST_WEB_SERVICE_URL = "http://www.learning-demo.eu/vocabularyTrainerService/rest/"
     //var REST_WEB_SERVICE_URL = "http://localhost:8030/vocabularyTrainerService/rest/"
     var CONTENT_URL = "http://www.learning-demo.eu/roleGadgets/gadgets/imc/vocabularyTrainer/html/";
+    //var CONTENT_URL = "http://localhost:8030/roleGadgets/gadgets/imc/vocabularyTrainer/html/";
     
     var tabs = new gadgets.TabSet(__MODULE_ID__, "Login");  
     var numberOfDisplayedPhotos = 10;
@@ -50,13 +51,16 @@
     var trainingsBucketNr;
 
 
+	google.load("language", "1");
+
 /*##############################################################################################################
 	initial content
 ##############################################################################################################*/
          
     function init(){
     	//load google translator api
-		google.load("language", "1");
+		
+		google.language.getBranding('googleBranding', { type : 'vertical' });
 		
 		//init trainer and service
 		trainer = new VocabularyTrainer();
@@ -142,16 +146,7 @@
     	//remove help tab
     	tabs.removeTab(0);
     	
-		tabs.addTab("Login", {
-           contentContainer: document.getElementById("login_tab")
-        });
-        tabs.addTab("Register", {
-           contentContainer: document.getElementById("register_tab")
-        });
-        
-   		loadContent(CONTENT_URL+"login.html",loginContentHandler);
-   		loadContent(CONTENT_URL+"register.html",registerContentHandler);	    	
-
+		init();
     }
     
     function initUserListsHandler(obj) {	
@@ -199,7 +194,7 @@
 		params[gadgets.io.RequestParameters.REFRESH_INTERVAL] =0;	
 
 		//add salt vs caching
-		//url= url +"#"+(new Date()).getTime();
+		url= url +"#"+(new Date()).getTime();
 
 		gadgets.io.makeRequest(url, contentHandler, params);     
     }  
@@ -357,7 +352,7 @@
 		if(!obj.data.errorMessage){
 			document.getElementById("globalCorrectAnswers").innerHTML = obj.data.correctAnswers;
 			document.getElementById("globalWrongAnswers").innerHTML = obj.data.wrongAnswers;
-			document.getElementById("globalSuccessRate").innerHTML = (obj.data.successRate*100)+"%";
+			document.getElementById("globalSuccessRate").innerHTML = Math.round(obj.data.successRate*100)+"%";
 		} 
 	}
 	
@@ -812,35 +807,41 @@
 ##############################################################################################################*/
 		
 	function subscribe(){
-		//gadgets.pubsub.subscribe("role-trainer", termReceived);
+		//subscribe
 		gadgets.openapp.connect(termReceived);
 		
 	}
 
 	function termReceived(envelope, message) {
 	
+		// Require its a select event
 		if (envelope.event === "select") {
+		
+			// Require namespaced-properties
+			if (envelope.type === "namespaced-properties") {
 			
-			// Require json-properties
-			if (envelope.type === "json") {
-				// Require rdf:type to be a TermObject
-				if (message[gadgets.openapp.RDF + "type"] === "http://www.role-project.eu/rdf/TermObject") {
-					//open the add term tab
+				// Require that http://www.role-project.eu/rdf/words/term is set			
+				if (typeof message["http://www.role-project.eu/rdf/words/term"] !== "undefined"){
+				
+					// Goto to the add tab
 					tabs.setSelectedTab(1);
+				
+					// update the input values with the retrieved message properties
+					document.getElementById('newTerm').value = 
+						message["http://www.role-project.eu/rdf/words/term"];
+					document.getElementById('newContext').value = 
+						message["http://www.role-project.eu/rdf/words/context"];
+					document.getElementById('newSrc').value = 
+						message["http://www.role-project.eu/rdf/words/source"];
 					
-					var msgObject = 
-						gadgets.json.parse(message[gadgets.openapp.RDF + "TermObject"]);
-					
-					document.getElementById('newTerm').value = msgObject.term;
-					document.getElementById('newContext').value = msgObject.context;
-					document.getElementById('newSrc').value = msgObject.src;
-					
+					// update the add tab
 					updateNewTerm();
-							
+				
 				}
 			}
-		}	
+		}
 	}
+			
 	
 /*##############################################################################################################
 	misc
@@ -994,6 +995,7 @@
 	<div class="imc_WidgetFooter" style="width:100%">
 			<div class="imc_WidgetFooter_Logo"></div>
 			<div class="role_WidgetFooter_Logo"></div>
+			<div id="googleBranding" style="margin:auto"></div>
 			<div style="width:105px"></div>			
 	</div>
   ]]>

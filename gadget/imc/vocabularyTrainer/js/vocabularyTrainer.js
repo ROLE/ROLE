@@ -48,7 +48,7 @@ VocabularyTrainer.prototype = {
 		return this.sessionWrongAnswers;
 	},
 	getSessionSuccessRate: function(){
-		return RoundToNdp(this.sessionSuccessRate,2);
+		return Math.round(this.sessionSuccessRate*100);
 	}, 	
 	
 	
