@@ -326,10 +326,10 @@
 		
 		//update scores
 		document.getElementById("trainScore").innerHTML = currentList.score;
-		document.getElementById("trainProgress").innerHTML = (currentList.progress*100)+"%";
+		document.getElementById("trainProgress").innerHTML = Math.round(currentList.progress*100)+"%";
 		document.getElementById("trainCorrectAnswers").innerHTML = currentList.correctAnswers;
 		document.getElementById("trainWrongAnswers").innerHTML = currentList.wrongAnswers;
-		document.getElementById("trainSuccessRate").innerHTML = (currentList.successRate*100)+"%";
+		document.getElementById("trainSuccessRate").innerHTML = Math.round(currentList.successRate*100)+"%";
 				
 		//update boxes
 		document.getElementById("trainItemsInBox1").innerHTML = currentList.bucket1.numberOfItems;
@@ -360,10 +360,10 @@
 		var currentList = trainer.getList(listPos);
 		
 		document.getElementById("listScore").innerHTML = currentList.score;
-		document.getElementById("listProgress").innerHTML = (currentList.progress*100)+"%";
+		document.getElementById("listProgress").innerHTML = Math.round(currentList.progress*100)+"%";
 		document.getElementById("listCorrectAnswers").innerHTML = currentList.correctAnswers;
 		document.getElementById("listWrongAnswers").innerHTML = currentList.wrongAnswers;
-		document.getElementById("listSuccessRate").innerHTML = (currentList.successRate*100)+"%";
+		document.getElementById("listSuccessRate").innerHTML = Math.round(currentList.successRate*100)+"%";
 		
 	}
 /*##############################################################################################################
