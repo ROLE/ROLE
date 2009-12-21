@@ -1,0 +1,22 @@
+diff -u -r shindig-1.0-incubating-source/java/gadgets/src/main/java/org/apache/shindig/gadgets/http/BasicHttpFetcher.java shindig-1.0-incubating-source-new/java/gadgets/src/main/java/org/apache/shindig/gadgets/http/BasicHttpFetcher.java
+--- shindig-1.0-incubating-source/java/gadgets/src/main/java/org/apache/shindig/gadgets/http/BasicHttpFetcher.java	2009-06-01 13:50:00.000000000 +0200
++++ shindig-1.0-incubating-source-new/java/gadgets/src/main/java/org/apache/shindig/gadgets/http/BasicHttpFetcher.java	2009-12-15 21:34:09.756677967 +0100
+@@ -87,8 +87,16 @@
+    */
+   private HttpURLConnection getConnection(HttpRequest request) throws IOException {
+     URL url = new URL(request.getUri().toString());
+-    HttpURLConnection fetcher = (HttpURLConnection) ( proxyProvider == null ?
+-        url.openConnection() : url.openConnection(proxyProvider.get()));
++    Proxy proxy;
++    if (proxyProvider == null) {
++      proxy = Proxy.NO_PROXY;
++    } else {
++      proxy = proxyProvider.get();
++      if (proxy.address() == null || proxy.type() == Proxy.Type.DIRECT) {
++        proxy = Proxy.NO_PROXY;
++      }
++    }
++    HttpURLConnection fetcher = (HttpURLConnection) url.openConnection(proxy);
+     fetcher.setConnectTimeout(CONNECT_TIMEOUT_MS);
+     fetcher.setRequestProperty("Accept-Encoding", "gzip, deflate");
+     fetcher.setInstanceFollowRedirects(request.getFollowRedirects());
