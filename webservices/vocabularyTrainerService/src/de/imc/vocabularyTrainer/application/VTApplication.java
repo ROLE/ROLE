@@ -1,8 +1,5 @@
 package de.imc.vocabularyTrainer.application;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -35,7 +32,7 @@ public class VTApplication extends org.restlet.Application {
 
     /** The list of items is persisted in memory. */
     private DatabaseWrapper dbWrapper;
-    private Connection connection;
+    private DataSource dataSource;
     
     private static Logger logger = Logger.getLogger(VTApplication.class);
 
@@ -46,19 +43,16 @@ public class VTApplication extends org.restlet.Application {
 			initContext = new InitialContext();
 
 			Context envContext  = (Context)initContext.lookup("java:/comp/env");
-			DataSource ds = (DataSource)envContext.lookup("jdbc/VTDB");
+			dataSource = (DataSource)envContext.lookup("jdbc/VTDB");
 			
-			connection = ds.getConnection();
+			//connection = ds.getConnection();
 			
-			dbWrapper = new DatabaseWrapper(connection);		
+			dbWrapper = new DatabaseWrapper(dataSource);		
 			
 		} catch (NamingException e) {
 			
 			logger.error(e.toString());
-		} catch (SQLException e) {
-			
-			logger.error(e.toString());		
-		}	
+		}
 			 
     }
     
@@ -128,8 +122,8 @@ public class VTApplication extends org.restlet.Application {
      * 
      * @return the list of registered items.
      */
-    public Connection getConnection() {
-        return connection;
+    public DataSource getConnection() {
+        return dataSource;
     }
     
 

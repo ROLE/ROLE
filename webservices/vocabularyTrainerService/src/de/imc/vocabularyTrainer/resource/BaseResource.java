@@ -1,6 +1,6 @@
 package de.imc.vocabularyTrainer.resource;
 
-import java.sql.Connection;
+import javax.sql.DataSource;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,7 +25,7 @@ public abstract class BaseResource extends ServerResource  {
      * 
      * @return the connection managed by this application.
      */
-    protected Connection getConnection() {
+    protected DataSource getConnection() {
         return ((VTApplication) getApplication()).getConnection();
     }
     

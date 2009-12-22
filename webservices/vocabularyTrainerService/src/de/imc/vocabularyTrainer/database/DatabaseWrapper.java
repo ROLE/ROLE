@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.sql.DataSource;
+
 import org.apache.log4j.Logger;
 
 import de.imc.vocabularyTrainer.UserVIList;
@@ -35,17 +37,22 @@ public class DatabaseWrapper {
 	/**
 	 * The database connection
 	 */
-	public Connection connection;
+	public DataSource dataSource;
 	
 
 	/**
 	 * Constructor
 	 * 
-	 * @param connection
+	 * @param dataSource
 	 */
-	public DatabaseWrapper(Connection connection) {
-		this.connection = connection;
+	public DatabaseWrapper(DataSource dataSource) {
+		this.dataSource = dataSource;
 		
+	}
+
+	private Connection getConnection() throws SQLException{
+		
+		return dataSource.getConnection();
 	}
 	
 
@@ -63,7 +70,8 @@ public class DatabaseWrapper {
 		int userid = 0;
 		
 		try{
-			Statement stmt = connection.createStatement();
+			
+			Statement stmt = getConnection().createStatement();
 			ResultSet rs = stmt.executeQuery(query);
 				
 			if(rs.next()) {
@@ -96,7 +104,7 @@ public class DatabaseWrapper {
 		
 		try {
 			//execute create user query and return userId
-			Statement userStmt = connection.createStatement();
+			Statement userStmt = getConnection().createStatement();
 			userStmt.executeUpdate(createUserQuery, Statement.RETURN_GENERATED_KEYS);
 			
 			ResultSet userRes = userStmt.getGeneratedKeys();
@@ -111,12 +119,12 @@ public class DatabaseWrapper {
 				"INSERT INTO user_scores (userid,correctanswers,wronganswers,hoursoftraining) "+
 					"VALUES ("+userId+",0,0,0);";
 			
-			Statement scoreStmt = connection.createStatement();
+			Statement scoreStmt = getConnection().createStatement();
 			scoreStmt.executeUpdate(createScoresQuery);
 			
 			
 			//execute create list query and return listId
-			Statement listStmt = connection.createStatement();
+			Statement listStmt = getConnection().createStatement();
 			listStmt.executeUpdate(createListQuery, Statement.RETURN_GENERATED_KEYS);
 			
 			ResultSet listRes = listStmt.getGeneratedKeys();
@@ -128,7 +136,7 @@ public class DatabaseWrapper {
 			
 			String createListMapQuery= 
 				"INSERT INTO user_listmap (userid,listid) VALUES ('"+userId+"','"+listId+"')";
-			Statement lisMapStmt = connection.createStatement();
+			Statement lisMapStmt = getConnection().createStatement();
 			lisMapStmt.executeUpdate(createListMapQuery);			
 			
 			
@@ -140,12 +148,14 @@ public class DatabaseWrapper {
 				  "`bucket4correctanswers`, `bucket4wronganswers`, "+
 				  "`bucket5correctanswers`, `bucket5wronganswers`) "+
 				"VALUES ('"+userId+"','"+listId+"','0','0','0','0','0','0','0','0','0','0');";
-			Statement listScoreStmt = connection.createStatement();
+			Statement listScoreStmt = getConnection().createStatement();
 			listScoreStmt.executeUpdate(createListScoresQuery);			
 			
 		} catch (SQLException e) {
 			logger.error(e.toString());
 		}
+		
+		logger.info("New user created: " +user.getUsername() +"["+user.getUserId()+"]");
 	}
 	
 
@@ -162,7 +172,7 @@ public class DatabaseWrapper {
 		VTUser user = null;
 		
 		try{
-			Statement stmt = connection.createStatement();
+			Statement stmt = getConnection().createStatement();
 			ResultSet rs = stmt.executeQuery(query);
 			
 			if(rs.next()) {
@@ -221,7 +231,7 @@ public class DatabaseWrapper {
 			   "WHERE ulm.userid = '"+userId+"';";
 		
 		try{
-			Statement stmt = connection.createStatement();
+			Statement stmt = getConnection().createStatement();
 			ResultSet rs = stmt.executeQuery(getListsQuery);
 				
 			while(rs.next()) {
@@ -317,7 +327,7 @@ public class DatabaseWrapper {
 
 		Statement stmt;
 		try {
-			stmt = connection.createStatement();
+			stmt = getConnection().createStatement();
 			ResultSet rs = stmt.executeQuery(itemQuery);
 		
 			while(rs.next()) {
@@ -331,7 +341,7 @@ public class DatabaseWrapper {
 					"SELECT contextid, context, source FROM item_contexts "+
 						"WHERE itemid = '"+itemId+"';";
 				
-				Statement contextStmt = connection.createStatement();
+				Statement contextStmt = getConnection().createStatement();
 				ResultSet contextRs = contextStmt.executeQuery(contextQuery);
 				while(contextRs.next()) {
 					int contextId = contextRs.getInt("contextid");
@@ -347,7 +357,7 @@ public class DatabaseWrapper {
 					"SELECT translationid, translation FROM item_translations "+
 						"WHERE itemid = '"+itemId+"';";
 				
-				Statement translationStmt = connection.createStatement();
+				Statement translationStmt = getConnection().createStatement();
 				ResultSet translationRs = translationStmt.executeQuery(translationQuery);
 				while(translationRs.next()) {
 					int translationId = translationRs.getInt("translationid");
@@ -362,7 +372,7 @@ public class DatabaseWrapper {
 					"SELECT imageid, imageurl FROM item_images "+
 						"WHERE itemid = '"+itemId+"';";
 				
-				Statement imageStmt = connection.createStatement();
+				Statement imageStmt = getConnection().createStatement();
 				ResultSet imageRs = imageStmt.executeQuery(imageQuery);
 				while(imageRs.next()) {
 					int imageId = imageRs.getInt("imageid");
@@ -399,7 +409,7 @@ public class DatabaseWrapper {
 	public void deleteItem(int itemId) {
 
 		try{
-			Statement stmt = connection.createStatement();
+			Statement stmt = getConnection().createStatement();
 
 			String deleteItemFromItemsQuery = 
 				"DELETE FROM items " +
@@ -454,7 +464,7 @@ public class DatabaseWrapper {
 				"WHERE itemId = '"+itemId+"';";
 		
 		try {
-			Statement stmt = connection.createStatement();
+			Statement stmt = getConnection().createStatement();
 			ResultSet rs = stmt.executeQuery(userItemQuery);
 			
 			if(rs.next()){
@@ -494,8 +504,6 @@ public class DatabaseWrapper {
 						"WHERE userid = '"+userId+"';";	
 				
 				stmt.executeUpdate(userListScoreUpdateQuery);
-				
-				System.out.println(userListScoreUpdateQuery);
 
 				String userScoreUpdateQuery = 
 					"UPDATE user_scores "+
@@ -523,7 +531,7 @@ public class DatabaseWrapper {
 			addItemQuery = "INSERT INTO items (itemid, term)"+
 				"VALUES (null, '"+item.getTerm()+"');";
 
-			Statement stmt = connection.createStatement();
+			Statement stmt = getConnection().createStatement();
 			stmt.executeUpdate(addItemQuery, Statement.RETURN_GENERATED_KEYS);
 			
 			ResultSet res = stmt.getGeneratedKeys();
@@ -533,7 +541,7 @@ public class DatabaseWrapper {
 				itemId = res.getInt(1);
 			}
 			
-			Statement batchStmt = connection.createStatement();
+			Statement batchStmt = getConnection().createStatement();
 			Iterator<VItemContext> iter  = item.getContexts().iterator();
 			
 			while(iter.hasNext()){
@@ -614,7 +622,7 @@ public class DatabaseWrapper {
 		
 		try{
 			//execute query
-			Statement stmt = connection.createStatement();
+			Statement stmt = getConnection().createStatement();
 			ResultSet rs = stmt.executeQuery(query);
 			
 			
@@ -659,7 +667,7 @@ public class DatabaseWrapper {
 		String password = "";
 		
 		try{
-			Statement stmt = connection.createStatement();
+			Statement stmt = getConnection().createStatement();
 			ResultSet rs = stmt.executeQuery(query);
 				
 			if(rs.next()) {
@@ -689,7 +697,7 @@ public class DatabaseWrapper {
 		try {		
 			
 			//execute create list query and return listId
-			Statement listStmt = connection.createStatement();
+			Statement listStmt = getConnection().createStatement();
 			listStmt.executeUpdate(createListQuery, Statement.RETURN_GENERATED_KEYS);
 			
 			ResultSet listRes = listStmt.getGeneratedKeys();
@@ -704,7 +712,7 @@ public class DatabaseWrapper {
 			String createListMapQuery= 
 				"INSERT INTO user_listmap (userid,listid) VALUES ('"+userId+"','"+listId+"')";
 			
-			Statement lisMapStmt = connection.createStatement();
+			Statement lisMapStmt = getConnection().createStatement();
 			lisMapStmt.executeUpdate(createListMapQuery);			
 			
 			
@@ -718,7 +726,7 @@ public class DatabaseWrapper {
 				  "`bucket5correctanswers`, `bucket5wronganswers`) "+
 				"VALUES ('"+userId+"','"+listId+"','0','0','0','0','0','0','0','0','0','0');";
 			
-			Statement listScoreStmt = connection.createStatement();
+			Statement listScoreStmt = getConnection().createStatement();
 			listScoreStmt.executeUpdate(createListScoresQuery);			
 			
 		} catch (SQLException e) {
@@ -734,7 +742,7 @@ public class DatabaseWrapper {
 	 */
 	public void deleteList(int listId) {
 		try{
-			Statement stmt = connection.createStatement();
+			Statement stmt = getConnection().createStatement();
 
 			//prepare all queries
 			String deleteListFromListsQuery = 

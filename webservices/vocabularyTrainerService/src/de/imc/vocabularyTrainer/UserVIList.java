@@ -2,8 +2,11 @@ package de.imc.vocabularyTrainer;
 
 import java.math.BigDecimal;
 
+import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import de.imc.vocabularyTrainer.database.DatabaseWrapper;
 
 public class UserVIList extends VIList{
 	
@@ -13,6 +16,8 @@ public class UserVIList extends VIList{
 	UserVIListBucket bucket3;
 	UserVIListBucket bucket4;
 	UserVIListBucket bucket5;
+	
+	private static Logger logger = Logger.getLogger(DatabaseWrapper.class);
 	
 	
 	public UserVIList(int listId, String listName, String sourceLanguage,
@@ -43,8 +48,7 @@ public class UserVIList extends VIList{
 			this.bucket5 = new UserVIListBucket(listJSON.getJSONObject("bucket5"));
 			
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error(e.toString());
 		}		
 	}
 
@@ -67,11 +71,8 @@ public class UserVIList extends VIList{
 			listJSON.put("bucket5", bucket5.toJSON());
 		
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error(e.toString());
 		}
-		
-		System.out.println(listJSON.toString());
 		
 		return listJSON;
 	}		
