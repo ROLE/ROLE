@@ -55,20 +55,21 @@
 		  
 		  var insertedLanguages = new Object();
 		  
-		  /*
 		  for (l in google.language.Languages) {
 			var lng = l.toLowerCase();
 			var lngCode = google.language.Languages[l];
-			if (google.language.isTranslatable(lngCode) && (lngCode=="de" || lngCode=="en")) {
+			if (google.language.isTranslatable(lngCode) 
+				&& (lngCode=="de" || lngCode=="en" || lngCode=="fr" 
+					|| lngCode=="es" || lngCode=="zh-CN" || lngCode=="sv" || lngCode=="nl")) {
 						
 			  src.options.add(new Option(lng, lngCode));
 			  dst.options.add(new Option(lng, lngCode));
 			}
 		  }
-		  */
 		  
-		  	src.options.add(new Option("english", "en"));
-			dst.options.add(new Option("deutsch", "de"));
+		  
+		 	//src.options.add(new Option("english", "en"));
+			//dst.options.add(new Option("deutsch", "de"));
 		
 		  google.language.getBranding('googleBranding', { type : 'vertical' });
 		
@@ -170,7 +171,43 @@
 		
 		function getAonawareTranslationDictionaryCode(src,dest){
 			//at the moment just care about english->german
-			return "eng-deu"
+			var languageCode = "";
+	
+			if(src == "en"){
+				languageCode = "eng";
+			}else if(src == "de"){
+				languageCode = "deu";
+			}else if(src == "es"){
+				languageCode = "spa";
+			}else if(src == "fr"){
+				languageCode = "fra";
+			}else if(src == "nl"){
+				languageCode = "nld";
+			}else if(src == "sv"){
+				languageCode = "swe";
+			}else{
+				languageCode = src;
+			}
+
+			languageCode += "-";
+
+			if(dest == "en"){
+				languageCode += "eng";
+			}else if(dest == "de"){
+				languageCode += "deu";
+			}else if(dest == "es"){
+				languageCode += "spa";
+			}else if(dest == "fr"){
+				languageCode += "fra";
+			}else if(src == "nl"){
+				languageCode += "nld";
+			}else if(src == "sv"){
+				languageCode = "swe";
+			}else{
+				languageCode = dest;
+			}			
+			
+			return languageCode;
 		}
 		
 		function aonawareTranslationHandler(obj){
@@ -201,6 +238,10 @@
 			var params = {};
 			params[gadgets.io.RequestParameters.CONTENT_TYPE] = gadgets.io.ContentType.DOM;
 			params[gadgets.io.RequestParameters.METHOD] = gadgets.io.MethodType.GET;
+			
+			if(src != "en"){
+				return;
+			}
 			
 			var dictId = "english";
 			
@@ -258,6 +299,22 @@
 			params[gadgets.io.RequestParameters.METHOD] = gadgets.io.MethodType.GET;
 			
 			var host = "en.wikipedia.org";
+			if(src == "en"){
+				host = "en.wikipedia.org";
+			}else if(src == "de"){
+				host = "de.wikipedia.org";
+			}else if(src == "es"){
+				host = "es.wikipedia.org";
+			}else if(src == "fr"){
+				host = "fr.wikipedia.org";
+			}else if(src == "zh-CN"){
+				host = "zh.wikipedia.org";
+			}else if(src == "sv"){
+				host = "sv.wikipedia.org";
+			}else if(src == "nl"){
+				host = "nl.wikipedia.org";
+			}
+					
 			var get  = "/w/api.php?action=opensearch&format=xml&search="+_esc(value);
 			
 			var url = "http://"+host+get;
@@ -316,7 +373,7 @@
 			
 			//var url = "http://"+host+get;
 			
-			var url = createGoogleDictURL(value, "en", "de");
+			var url = createGoogleDictURL(value, src, dest);
 			
 			gadgets.io.makeRequest(url, googleDictTranslationHandler, params);		
 		}
