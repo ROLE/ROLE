@@ -37,7 +37,8 @@ my.gadgetSpecUrls = [
   'http://localhost:8888/gadgets/ROLE/imc/vocabularyTrainer/vocabularyTrainer.xml',
   //'http://www.learning-demo.eu/roleGadgetsIntern/gadgets/imc/vocabularyTrainer/vocabularyTrainer.xml',
   'http://localhost:8888/gadgets/ROLE/rwth/role-xmpp-chat-gadget.xml',
-  'http://localhost:8888/gadgets/ROLE/fit/CamWidget/cam_gadget.xml'
+  'http://localhost:8888/gadgets/ROLE/fit/CamWidget/cam_gadget.xml',
+  'http://localhost:8888/gadgets/ROLE/kul/MonitorWidget/gadget.xml'
 ];
 
 my.gadgetSpecNames = [
@@ -45,7 +46,8 @@ my.gadgetSpecNames = [
   'Translator',
   'Vocabulary Trainer',
   'Chat',
-  'CAM'
+  'CAM',
+  'MonitorWidget'
 ];
 
 my.LayoutManager = function() {
@@ -100,6 +102,8 @@ function log(message) {
   <div id="output" style="clear: left;">
   <div id="gadget-chrome-3" class="gadgets-gadget-chrome" style="width:350px"></div>
   <div id="gadget-chrome-4" class="gadgets-gadget-chrome" style="width:350px"></div>
+  <div id="output" style="clear: left;">
+  <div id="gadget-chrome-5" class="gadgets-gadget-chrome" style="width:100%"></div>
   </div>
 </body>
 </html>

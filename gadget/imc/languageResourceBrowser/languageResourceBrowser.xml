@@ -2,16 +2,16 @@
 <Module>
   <ModulePrefs 
   	title="Language Resource Browser" 
-  	title_url="" 
-	description="" 
-	author="" 
-	author_email="" 
+	title_url="" 
+	description="A widget which used in combination with a translator widget to read texts and create a vocabulary list with a vocabulray trainer widget" 
+	author="Daniel Dahrendorf" 
+	author_email="daniel.dahrendorf@im-c.de" 
 	author_affiliation="" 
-	author_location="" 
-	category="" 
+	author_location="Germany" 
+	category="education" 
 	thumbnail="__MSG_thumbnail__" 
 	screenshot="__MSG_screenshot__" 
-	heigth="650">
+	height="650">
     <Require feature="dynamic-height" />
     <Require feature="pubsub" />
     <Require feature="tabs" />
@@ -139,30 +139,24 @@
 	function sendSelectionToTranslator(termId,contextId,srcId) {
 	
 		//create the object
-		var msg = new Object();
-		msg.term = document.getElementById(termId).value;
-		msg.context = document.getElementById(contextId).value;
-		msg.src = document.getElementById(srcId).value;
-		
-		//transform it to JSON
-		var msgJSONObject =  gadgets.json.stringify(msg);
+		var vocItem = new Object();
+		vocItem.term = document.getElementById(termId).value;
+		vocItem.context = document.getElementById(contextId).value;
+		vocItem.src = document.getElementById(srcId).value;
 		
 		//send it
-		//gadgets.pubsub.publish("role-translator", msgJSONObject);
-		sendSelection(msgJSONObject);
+		sendSelection(vocItem);
 	}
 	
-	function sendSelection(msgJSONObject){
+	function sendSelection(vocItem){
 
 		  var message = {};
 		  
-		  message[gadgets.openapp.RDF + "type"]
-		      = "http://www.role-project.eu/rdf/TermObject";  
-		      
-		  message[gadgets.openapp.RDF + "TermObject"]
-		      = msgJSONObject;
-		      
-		  gadgets.openapp.publish({type: "json"}, message);
+		  message["http://www.role-project.eu/rdf/words/term"] = vocItem.term;
+		  message["http://www.role-project.eu/rdf/words/context"] = vocItem.context;
+		  message["http://www.role-project.eu/rdf/words/source"] = vocItem.src;
+      
+		  gadgets.openapp.publish({type: "namespaced-properties"}, message);
 	}
 	
 	

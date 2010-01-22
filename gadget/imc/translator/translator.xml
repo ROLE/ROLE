@@ -3,14 +3,14 @@
   <ModulePrefs 
   	title="Translator" 
 	title_url="" 
-	description="" 
-	author="" 
-	author_email="" 
+	description="A widget which query different dictianary services" 
+	author="Daniel Dahrendorf" 
+	author_email="daniel.dahrendorf@im-c.de" 
 	author_affiliation="" 
-	author_location="" 
-	category="" 
+	author_location="Germany" 
+	category="education" 
 	thumbnail="__MSG_thumbnail__" 
-	screenshot="__MSG_screenshot__"
+	screenshot="__MSG_screenshot__" 
 	height="650">
 	<Require feature="pubsub" />
     <Require feature="setprefs"/>
@@ -96,33 +96,34 @@
 	    }
 		
 		
-		function subscribe(){
-			//gadgets.pubsub.subscribe("role-translator", termReceived);
-			gadgets.openapp.connect(termReceived);
-			
-		}
-	
-		function termReceived(envelope, message) {
+	function subscribe(){
+		//subscribe
+		gadgets.openapp.connect(termReceived);
 		
-			if (envelope.event === "select") {
+	}
+
+	function termReceived(envelope, message) {
+	
+		// Require its a select event
+		if (envelope.event === "select") {
+		
+			// Require namespaced-properties
+			if (envelope.type === "namespaced-properties") {
+			
+				// Require that http://www.role-project.eu/rdf/words/term is set			
+				if (typeof message["http://www.role-project.eu/rdf/words/term"] !== "undefined"){
 				
-				// Require json-properties
-				if (envelope.type === "json") {
-					// Require rdf:type to be a TermObject
-					if (message[gadgets.openapp.RDF + "type"] === "http://www.role-project.eu/rdf/TermObject") {
-						//open the add term tab
+					
+					document.getElementById('source').value = 
+						message["http://www.role-project.eu/rdf/words/term"];
 						
-						var msgObject = 
-							gadgets.json.parse(message[gadgets.openapp.RDF + "TermObject"]);
-						
-						document.getElementById('source').value = msgObject.term;
-						
-						submitChange();
-								
-					}
+					submitChange();
+				
 				}
-			}	
-		}		
+			}
+		}
+	}
+		
 		
 		function submitChange() {
 			var translationBody = document.getElementById("translation_body");
