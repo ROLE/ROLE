@@ -64,6 +64,8 @@ file="${DOMAIN_PATH}/applications/j2ee-modules/socialsite/index.jsp" />
 <delete file="${SOCIALSITE_PATH}/local_gadgets/cam_gadget.xml"/>
 <delete file="${SOCIALSITE_PATH}/local_gadgets/camwidget_canvas.js"/>
 <delete file="${SOCIALSITE_PATH}/local_gadgets/gears_init.js"/>
+<delete file="${SOCIALSITE_PATH}/local_gadgets/CamSchema.js"/>
+<delete file="${SOCIALSITE_PATH}/local_gadgets/prototype-1.6.0.3.js"/>
  
 <copy file="${basedir}/cam_gadget.xml"
 tofile="${SOCIALSITE_PATH}/local_gadgets/cam_gadget.xml"/>
@@ -71,6 +73,11 @@ tofile="${SOCIALSITE_PATH}/local_gadgets/cam_gadget.xml"/>
 tofile="${SOCIALSITE_PATH}/local_gadgets/camwidget_canvas.js"/>
 <copy file="${basedir}/gears_init.js"
 tofile="${SOCIALSITE_PATH}/local_gadgets/gears_init.js"/>
+<copy file="${basedir}/CamSchema.js"
+tofile="${SOCIALSITE_PATH}/local_gadgets/CamSchema.js"/>
+<copy file="${basedir}/prototype-1.6.0.3.js"
+tofile="${SOCIALSITE_PATH}/local_gadgets/prototype-1.6.0.3.js"/>
+	
 <!--
 <copy file="${basedir}/socialsite/js/consumer.jsp"
 tofile="${SOCIALSITE_PATH}/js/consumer.jsp"/>
