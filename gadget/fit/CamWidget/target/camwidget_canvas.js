@@ -80,7 +80,8 @@ function camWidgetCallback(envelope, message) {
 	if (Object.isUndefined(messageSrc)) {
 		messageSrc = "noMessageSrcAvailable";
 	}
-	var timestamp = new Date();
+	//var timestamp = new Date();
+	var timestamp = envelope.date;
 	var actionType = envelope.event;
 	
 	// minimum relatedData
