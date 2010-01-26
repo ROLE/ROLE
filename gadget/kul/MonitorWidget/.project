@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>TestWidget</name>
+	<comment></comment>
+	<projects>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>jp.eisbahn.eclipse.plugins.osde.gadgetBuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>jp.eisbahn.eclipse.plugins.osde.osdeNature</nature>
+	</natures>
+</projectDescription>

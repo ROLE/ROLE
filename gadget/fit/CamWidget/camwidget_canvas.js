@@ -7,6 +7,9 @@ function init() {
     // TODO: Write the code for initializing.
 }
 
+/**
+ * selection of the user (Remote, Local, Off
+ */
 function getSelection() {
 	var selection;
 	if(document.camform.selection[0].checked == true) {
@@ -21,107 +24,132 @@ function getSelection() {
 	return selection;
 }
 
-// TODO how do i access envelope.date?
-function callback(envelope, message) {
-	// Filter out select events
+function getLastEntry() {
 	var storagemode = getSelection();
-	var messageLabel = message["http://www.role-project.eu/rdf/words/label"];
-	var messageTerm = message["http://www.role-project.eu/rdf/words/term"];
-	var messageContext = message["http://www.role-project.eu/rdf/words/context"];
-	var messageSrc = message["http://www.role-project.eu/rdf/words/source"];
-	var timestamp = new Date().getTime();
-	var actionType = envelope.event;
-	javascript:store(actionType, storagemode,  messageLabel, messageTerm, messageContext, messageSrc, timestamp);
-}
-
-//function callback(envelope, message) {
-	// Filter out select events
-	//var envelopeString = gadgets.json.stringify(envelope);
-	//var envelopeObject = eval('(' + test + ')');
-	//alert(myObject.event);
-	//alert(myObject.message[gadgets.openapp.RDF + "label"]);
-	
-	
-	//if (envelope.event === "select") {
-		// Require namespaced-properties
-		//if (envelope.type === "namespaced-properties") {
-			// Require rdf:type to be a word
-			//if (message[gadgets.openapp.RDF + "type"] === "http://example.com/rdf/Word") {
-				//var item = document.createElement("div");
-				//item.appendChild(document.createTextNode(message[gadgets.openapp.RDF + "label"]));
-				//document.getElementById("output").appendChild(item);
-				//var storagemode = getSelection();
-				//var mes = envelope.message[gadgets.openapp.RDF + "label"];
-				//var sender = "";
-				//var timestamp = new Date().getTime();
-				//var actionType = envelope.event;
-				//javascript:store(actionType, storagemode, mes, sender, timestamp);
-			//}
-		//}
-	//}
-//}
-
-// TODO: Use correct CAM Schema
-function store(actionType, storagemode,  messageLabel, messageTerm, messageContext, messageSrc, timestamp)
-{
+	var resultEntry = null;
+	var storeLive = false;
 	if (storagemode == 'local') {
-		var db = google.gears.factory.create('beta.database');
-		db.open('database-test');
-		db.execute('create table if not exists TestCamVoc (Storagemode text, MessageLabel text, MessageTerm text, MessageContext text, MessageSrc text, ActionType text, Timestamp int)');
-		db.execute('insert into TestCamVoc values (?, ?, ?, ?, ?, ?, ?)', [storagemode, messageLabel, messageTerm, messageContext, messageSrc, actionType, timestamp]); 
-		db.close();	
+		if (storeLive) {
+			resultEntry = getLastEntryLocal('database-RoleCam');
+		} else {
+			resultEntry = getLastEntryLocal('database-RoleCamTest');
+		}		
+		alert(Object.toJSON(resultEntry));
 	}
 	else if (storagemode == 'remote') {
-		
-		var groupTitle = "TestUser";
-		var feedTitle = "TestFeedTitle";
-		var feedUrl = messageSrc;
-		var feedType = storagemode;
-		var itemGuid = messageLabel;
-		var eventTimestamp = timestamp;
-		var eventActiontype = actionType;
-		var eventContextValue = messageContext;
-		var eventDescription = messageTerm;
-		
-		var params = '';
-		params += 'groupTitle=' + groupTitle;
-		params += '&feedTitle=' + feedTitle;
-		params += '&feedUrl=' + feedUrl;
-		params += '&feedType=' + feedType;
-		params += '&itemGuid=' + itemGuid;
-		params += '&eventTimestamp=' + eventTimestamp;
-		params += '&eventActiontype=' + eventActiontype;
-		
-		params += '&eventContextValue=' + eventContextValue;
-		params += '&eventDescription=' + eventDescription;
-		
-		
-		//var url = 'http://duccio.informatik.rwth-aachen.de:9080/axis2/services/RemoteCamStorageService/storeCamToDB';
-		var url = 'http://duccio.informatik.rwth-aachen.de:9080/RemoteCamStorage/services/RemoteCamStorage/storeCamToDB';
-		var xmlHttp = null;
-		try {
-		      // Mozilla, Opera, Safari sowie Internet Explorer (ab v7)
-		      xmlHttp = new XMLHttpRequest();
-		} catch(e) {
-			alert('request failed' + e);
+		var params  = {};
+	   	var postdata = {
+	   		storeLive : storeLive
+	   	};
+	   	
+	   	params[gadgets.io.RequestParameters.METHOD] = gadgets.io.MethodType.POST;
+	   	params[gadgets.io.RequestParameters.POST_DATA]= gadgets.io.encodeValues(postdata);	   	
+	   	params[gadgets.io.RequestParameters.CONTENT_TYPE] = gadgets.io.ContentType.Text;
+		var url = "http://duccio.informatik.rwth-aachen.de:9080/axis2/services/CamQueryService/getLastEntry";
+	   	gadgets.io.makeRequest(url, getLastEntryCallback, params);
+	}
+	return resultEntry;	
+}
+// handles the result of the WebService Method
+function getLastEntryCallback(obj){
+	var camRequestResult = obj.data;
+	alert(camRequestResult);
+}
+
+
+// TODO how do i access envelope.date?
+function camWidgetCallback(envelope, message) {
+	// Filter out select events
+	var messageLabel = message["http://www.role-project.eu/rdf/words/label"];
+	if (Object.isUndefined(messageLabel)) {
+		// hack to make pubsub sample running
+		messageLabel = message[gadgets.openapp.RDF + "label"];
+		if (Object.isUndefined(messageLabel)) {
+			messageLabel = "noMessageLabelAvailable";
 		}
-		xmlHttp.open("GET", url + '?' + params, true); 
-		xmlHttp.send(null);
+	}
+	var messageTerm = message["http://www.role-project.eu/rdf/words/term"];
+	if (Object.isUndefined(messageTerm)) {
+		messageTerm = "noMessageTermAvailable";
+	}
+	var messageContext = message["http://www.role-project.eu/rdf/words/context"];
+	if (Object.isUndefined(messageContext)) {
+		messageContext = "noMessageTermContext";
+	}
+	var messageSrc = message["http://www.role-project.eu/rdf/words/source"];
+	if (Object.isUndefined(messageSrc)) {
+		messageSrc = "noMessageSrcAvailable";
+	}
+	//var timestamp = new Date();
+	var timestamp = envelope.date;
+	var actionType = envelope.event;
+	
+	// minimum relatedData
+	var relatedData1 = new RelatedData("messageTerm", messageTerm);
+	var relatedData2 = new RelatedData("messageContext", messageContext);
+	// minimum event
+	var event = new Event(actionType, dateToJson(timestamp), new Array(relatedData1, relatedData2));
+	// minimal item
+	var item = new Item(messageLabel, messageSrc, new Array(event));
+	// minimal feed
+	var feed  = new Feed(messageLabel, messageSrc, "feedType_json", new Array(item));
+	/*
+	// readTimes
+	var rt1 = new ReadTime("rt1");
+	feed.readTimes.push(rt1);
+	var rt2 = new ReadTime("rt2");
+	feed.readTimes.push(rt2);
+	// altUrls	
+	var altUrl1 = new AltUrl("altUrl1");
+	feed.altUrls.push(altUrl1);
+	var altUrl2 = new AltUrl("altUrl2");
+	feed.altUrls.push(altUrl2);
+	*/
+	// Group
+	var group = new Group("testUser", new Array(feed, feed));
+		  	
+	storeJsonGroup(group, false);
+}
+ 	
+function storeJsonGroup(group, storeLive) {
+	var storagemode = getSelection();
+	if (storagemode == 'local') {
+		var db = google.gears.factory.create('beta.database');
+		if (storeLive) {
+			db.open('database-RoleCam');
+		} else {
+			db.open('database-RoleCamTest');
+		}
+		
+		// create Tables
+		createLocalTables(db);
+		// store
+		storeCamLocal(db, group);
+		
+		// close db
+		db.close();			
+	}
+	else if (storagemode == 'remote') {
+		var jsonGroup = Object.toJSON(group);
+		var params  = {};
+	   	var postdata = {
+	   		jsonGroup : jsonGroup,
+	   		storeLive : storeLive
+	   	};
+	   	
+	   	params[gadgets.io.RequestParameters.METHOD] = gadgets.io.MethodType.POST;
+	   	params[gadgets.io.RequestParameters.POST_DATA]= gadgets.io.encodeValues(postdata);	   	
+	   	params[gadgets.io.RequestParameters.CONTENT_TYPE] = gadgets.io.ContentType.Text;
+		var url = "http://duccio.informatik.rwth-aachen.de:9080/axis2/services/CamStoreService/storeCam";
+	   	gadgets.io.makeRequest(url, storeCamCallback, params);
 	}
 } 
 
-function query(limit)
-{
-	var db = google.gears.factory.create('beta.database');
-	db.open('database-test');
-	var rs = db.execute('select * from TestCamVoc order by Timestamp desc limit ' + limit);
-	var result = "";
-	while (rs.isValidRow()) {
-	  var wert = "" +  rs.fieldByName("Storagemode") + " " + rs.fieldByName("MessageLabel") + " " + rs.fieldByName("MessageTerm") + " " + rs.fieldByName("MessageContext") + " " + rs.fieldByName("MessageSrc") + " " + rs.fieldByName("ActionType") + " " + rs.fieldByName("Timestamp") + "\n";
-	  result = result + wert;
-	  rs.next();
+// handles the result of the WebService Method
+function storeCamCallback(obj){
+	var x = obj.data;
+	// wenn speichern nicht geklappt -> alert
+	if (x.indexOf("false") != -1) {
+		alert("x: " + x);
 	}
-	rs.close();
-	alert(result);
 }
-

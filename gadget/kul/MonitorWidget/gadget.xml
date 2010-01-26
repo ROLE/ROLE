@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Module>
+  <ModulePrefs title="Test" author_email="test@home.net" width="100%">
+    <!--<Require feature="opensocial-0.9" />-->
+    <Require feature="flash" />
+    <Require feature="dynamic-height"/>
+  </ModulePrefs>
+  <Content type="html"><![CDATA[
+
+<script type="text/javascript" src="http://localhost:8888/gadgets/ROLE/kul/MonitorWidget/canvas.js"></script>
+
+<script type="text/javascript">
+gadgets.util.registerOnLoadHandler(init);
+</script>
+
+<!-- The code for Canvas view is here. -->
+
+<div id="flashcontainer" style="text-align: center; width: 100%; height: 100%;"></div> 
+
+
+
+  ]]></Content>
+</Module>
