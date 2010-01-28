@@ -45,7 +45,7 @@ function getLastEntry() {
 	   	params[gadgets.io.RequestParameters.METHOD] = gadgets.io.MethodType.POST;
 	   	params[gadgets.io.RequestParameters.POST_DATA]= gadgets.io.encodeValues(postdata);	   	
 	   	params[gadgets.io.RequestParameters.CONTENT_TYPE] = gadgets.io.ContentType.Text;
-		var url = "http://duccio.informatik.rwth-aachen.de:9080/axis2/services/CamQueryService/getLastEntry";
+		var url = "http://monet.informatik.rwth-aachen.de/axis2/services/CamQueryService/getLastEntry";
 	   	gadgets.io.makeRequest(url, getLastEntryCallback, params);
 	}
 	return resultEntry;	
@@ -80,7 +80,6 @@ function camWidgetCallback(envelope, message) {
 	if (Object.isUndefined(messageSrc)) {
 		messageSrc = "noMessageSrcAvailable";
 	}
-	//var timestamp = new Date();
 	var timestamp = envelope.date;
 	var actionType = envelope.event;
 	
@@ -140,7 +139,7 @@ function storeJsonGroup(group, storeLive) {
 	   	params[gadgets.io.RequestParameters.METHOD] = gadgets.io.MethodType.POST;
 	   	params[gadgets.io.RequestParameters.POST_DATA]= gadgets.io.encodeValues(postdata);	   	
 	   	params[gadgets.io.RequestParameters.CONTENT_TYPE] = gadgets.io.ContentType.Text;
-		var url = "http://duccio.informatik.rwth-aachen.de:9080/axis2/services/CamStoreService/storeCam";
+		var url = "http://monet.informatik.rwth-aachen.de/axis2/services/CamStoreService/storeCam";
 	   	gadgets.io.makeRequest(url, storeCamCallback, params);
 	}
 } 
