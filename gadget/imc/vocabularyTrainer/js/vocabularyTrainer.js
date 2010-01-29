@@ -221,13 +221,13 @@ VocabularyTrainer.prototype = {
 	},
 		
 	
-	pushVItemsIntoTable: function (items, tableId, bucketPos){
-				
+	pushVItemsIntoTable: function (items, tableId, bucketPos, sourceLanguage, targetLanguage){
+			
 		//get table
 		var table = document.getElementById(tableId);
 		
 		//clear table
-		table.innerHTML = '<tr><th width="30"scope="col">&nbsp;</th><th width="92" scope="col">English</th><th width="112" scope="col">Your Language</th><th width="30" scope="col">&nbsp;</th><th width="30" scope="col">&nbsp;</th></tr>';
+		table.innerHTML = '<tr><th width="30"scope="col">&nbsp;</th><th width="92" scope="col">'+sourceLanguage+'</th><th width="112" scope="col">'+targetLanguage+'</th><th width="30" scope="col">&nbsp;</th><th width="30" scope="col">&nbsp;</th></tr>';
 		
 		switch (bucketPos) {
 		  case 0:

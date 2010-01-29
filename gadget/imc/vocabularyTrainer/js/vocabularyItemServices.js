@@ -3,12 +3,7 @@ function submitToGoogleDictTranslation(value,src,dest){
 		params[gadgets.io.RequestParameters.CONTENT_TYPE] = gadgets.io.ContentType.DOM;
 		params[gadgets.io.RequestParameters.METHOD] = gadgets.io.MethodType.GET;
 		
-		//var host = "www.google.com";
-		//var get  = "/dictionary/feeds?client=ig&restrict=pr&langpair=en|de&hl=en&q="+value;
-		
-		//var url = "http://"+host+get;
-		
-		var url = createGoogleDictURL(value, "en", "de");
+		var url = createGoogleDictURL(value, src, dest);
 		
 		gadgets.io.makeRequest(url, googleDictTranslationHandler, params);		
 	}

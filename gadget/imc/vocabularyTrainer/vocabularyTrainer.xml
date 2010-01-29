@@ -16,31 +16,23 @@
 	<Require feature="tabs"/>
 	<Require feature="setprefs"/>
 	<Require feature="dynamic-height"/>
-
+	<Require feature="opensocial-0.8"/>
+	
 </ModulePrefs>
+    
   <Content type="html" view="home,canvas,default">
-  <![CDATA[ 
-  	<link href="http://www.learning-demo.eu/roleGadgets/gadgets/imc/vocabularyTrainer/css/vocabularyTrainer.css" 
-		rel="stylesheet" type="text/css"/>
-	<link href="http://www.learning-demo.eu/roleGadgets/gadgets/imc/css/imcWidgets.css" 
-		rel="stylesheet" type="text/css" />
+  <![CDATA[
   	
 	<script type="text/javascript" src="http://www.google.com/jsapi"></script>
-	
-	<script type="text/javascript" src="http://www.learning-demo.eu/roleGadgets/gadgets/imc/vocabularyTrainer/js/photoServices.js"></script>
-	<script type="text/javascript" src="http://www.learning-demo.eu/roleGadgets/gadgets/imc/vocabularyTrainer/js/webtoolkit.base64.js"></script>
-	<script type="text/javascript" src="http://www.learning-demo.eu/roleGadgets/gadgets/imc/vocabularyTrainer/js/vocabularyItemServices.js"></script>
-	<script type="text/javascript" src="http://www.learning-demo.eu/roleGadgets/gadgets/imc/vocabularyTrainer/js/vocabularyTrainer.js"></script>
-	<script type="text/javascript" src="http://www.learning-demo.eu/roleGadgets/gadgets/imc/vocabularyTrainer/js/vocabularyTrainerService.js"></script>
 	<script type="text/javascript" src="http://open-app.googlecode.com/files/openapp.js"></script>
-
-	
+		
     <script type="text/javascript">
     
     var REST_WEB_SERVICE_URL = "http://www.learning-demo.eu/vocabularyTrainerService/rest/"
     //var REST_WEB_SERVICE_URL = "http://localhost:8030/vocabularyTrainerService/rest/"
-    var CONTENT_URL = "http://www.learning-demo.eu/roleGadgets/gadgets/imc/vocabularyTrainer/html/";
-    //var CONTENT_URL = "http://localhost:8030/roleGadgets/gadgets/imc/vocabularyTrainer/html/";
+
+    var contentUrl = "";
+    
     
     var tabs = new gadgets.TabSet(__MODULE_ID__, "Login");  
     var numberOfDisplayedPhotos = 10;
@@ -50,27 +42,102 @@
     
     var trainingsBucketNr;
 
+	
 
 	google.load("language", "1");
+
+/*##############################################################################################################
+	loading external resources
+##############################################################################################################*/
+	var externalResourcesToLoad = 0;
+	
+	function reportError(errString) {
+	  if(!window.__error) window.__error = {};
+	  if( !window.__error[errString] ) {
+	    // Suppress multiple
+	    window.__error[errString] = true;
+	    alert(errString);
+	  }
+	};
+	
+	function getModuleBase() {
+	  if( window.__moduleBase ) return window.__moduleBase;
+	  if( _args ) {
+	    var moduleBase=_args()['url'];
+	    moduleBase=moduleBase.substring(0,moduleBase.lastIndexOf('/')+1);
+	    window.__moduleBase = moduleBase;
+	    return window.__moduleBase;
+	  };
+	  reportError('Can not find module base. Gadget may not work properly.');
+	  return '';
+	};
+	
+	function rebaseRelativeUrl(relativeUrl,cached) {
+	  var moduleBase = getModuleBase();
+	  var absUrl = moduleBase+relativeUrl;
+	  if( cached && _IG_GetCachedUrl ) {
+	    absUrl = _IG_GetCachedUrl(absUrl);
+	  };
+	  return absUrl;
+	};
+	
+	function addStylesheet(cssRelativeUrl,useCaching) {
+	  var rebasedUrl = rebaseRelativeUrl(cssRelativeUrl,useCaching);
+	  document.write('<link rel="stylesheet" href="'+rebasedUrl+'">')
+	};
+	
+	function addScript(jsRelativeUrl,onLoaded,useCaching) {
+	  	
+	  	externalResourcesToLoad++;
+	  	
+	  	var rebasedUrl = rebaseRelativeUrl(jsRelativeUrl,useCaching);
+	  
+	  	//document.write('<script type="text/javascript" src="'+rebasedUrl+'"><\/script>')
+		var script = document.createElement("script");
+		script.src = rebasedUrl;
+		if (onLoaded) script.onload = onLoaded;
+		document.body.appendChild(script);
+	};
 
 /*##############################################################################################################
 	initial content
 ##############################################################################################################*/
          
-    function init(){
-    	//load google translator api
-		
+function init(){
+
+		var useCaching = false;
+
+		addScript("js/photoServices.js",checkExternalResourcesLoaded,useCaching); 
+		addScript("js/webtoolkit.base64.js",checkExternalResourcesLoaded,useCaching);
+       	addScript("js/vocabularyItemServices.js",checkExternalResourcesLoaded,useCaching);
+       	addScript("js/vocabularyTrainer.js",checkExternalResourcesLoaded,useCaching);
+       	addScript("js/vocabularyTrainerService.js",checkExternalResourcesLoaded,useCaching);
+       	
+       	addStylesheet("../css/imcWidgets.css",useCaching);
+       	addStylesheet("css/vocabularyTrainer.css",useCaching);
+       	
+       	//set content url
+       	contentUrl = getModuleBase()+"html/";
+}; 
+
+function checkExternalResourcesLoaded(){
+
+	externalResourcesToLoad--;
+
+	if(externalResourcesToLoad == 0){
+		gadgetInit();
+	}
+}
+         
+         
+    function gadgetInit(){
+    	//load google translator api		
 		google.language.getBranding('googleBranding', { type : 'vertical' });
 		
 		//init trainer and service
 		trainer = new VocabularyTrainer();
 		trainerWebService = new VocabularyTrainerService(REST_WEB_SERVICE_URL);
-       	
-       //load css dynamic to avoid shindig caching
-       	//loadCss(CONTENT_URL+"../"+"../css/imcWidgets.css");
-       	//loadCss(CONTENT_URL+"../"+"css/vocabularyTrainer.css");
-       	
-       
+ 
     	//TODO: 
     	//check if userdata is stored in the widget 
     	if(false){
@@ -83,23 +150,9 @@
 	           contentContainer: document.getElementById("register_tab")
 	        });
 	        
-    		loadContent(CONTENT_URL+"login.html",loginContentHandler);
-    		loadContent(CONTENT_URL+"register.html",registerContentHandler);	
+    		loadContent(contentUrl+"login.html",loginContentHandler);
+    		loadContent(contentUrl+"register.html",registerContentHandler);	
     	}
-    }
-    
-    function loadCss(url){  
-    	//add salt 
-    	//url+"#"+(new Date()).getTime();
-    
-    	//create and append a link node in head
-	    var headID = document.getElementsByTagName("head")[0];         
-		var cssNode = document.createElement('link');
-		cssNode.type = 'text/css';
-		cssNode.rel = 'stylesheet';
-		cssNode.href = url;
-		cssNode.media = 'screen';
-		headID.appendChild(cssNode);
     }
     
     function login(username,userpassword){
@@ -180,11 +233,11 @@
 		subscribe();
 				
 		//load content		
-		loadContent(CONTENT_URL+"add.html" ,initAddContentHandler);
-   		loadContent(CONTENT_URL+"list.html" ,initListContentHandler);
-   		loadContent(CONTENT_URL+"train.html" ,initTrainContentHandler);
-   		loadContent(CONTENT_URL+"stats.html" ,initStatsContentHandler);
-   		loadContent(CONTENT_URL+"help.html" ,initHelpContentHandler);		
+		loadContent(contentUrl+"add.html" ,initAddContentHandler);
+   		loadContent(contentUrl+"list.html" ,initListContentHandler);
+   		loadContent(contentUrl+"train.html" ,initTrainContentHandler);
+   		loadContent(contentUrl+"stats.html" ,initStatsContentHandler);
+   		loadContent(contentUrl+"help.html" ,initHelpContentHandler);		
 	} 
  
     function loadContent(url, contentHandler){   
@@ -210,6 +263,22 @@
 		var html = obj.text;
 		document.getElementById('register_content').innerHTML = html;
 		
+		var src = document.getElementById('registerSourceLanguage');
+		var dst = document.getElementById('registerTargetLanguage');
+					 
+		 for (l in google.language.Languages) {
+			var lng = l.toLowerCase();
+			var lngCode = google.language.Languages[l];
+			if (google.language.isTranslatable(lngCode) 
+				&& (lngCode=="de" || lngCode=="en" || lngCode=="fr" 
+					|| lngCode=="es" || lngCode=="zh-CN" || lngCode=="sv" || lngCode=="nl")) {
+							
+			  src.options.add(new Option(lng, lngCode));
+			  dst.options.add(new Option(lng, lngCode));
+
+			}
+		 }
+			
 		gadgets.window.adjustHeight();	
 	} 	
 	
@@ -290,17 +359,50 @@
 	function updateListContent(listPos){
 
 		var currentList = trainer.getList(listPos);
-		
+				
 		if(currentList != null){
 			
-			var currentListId = currentList.listId;
-	  	
+			var currentListId = currentList.listId;	  	
 	  		trainerWebService.fetchUserItems(user,currentListId,updateListContentHandler);	
 		}	
 		
 		//update language
-		document.getElementById("listSourceLanguage").innerHTML = currentList.sourceLanguage;
-		document.getElementById("listTargetLanguage").innerHTML = currentList.targetLanguage;
+		if(currentList.sourceLanguage == "en"){
+			document.getElementById("listSourceLanguage").innerHTML = "English";
+		}else if(currentList.sourceLanguage == "de"){
+			document.getElementById("listSourceLanguage").innerHTML = "German";
+		}else if(currentList.sourceLanguage == "es"){
+			document.getElementById("listSourceLanguage").innerHTML = "Spanish";
+		}else if(currentList.sourceLanguage == "fr"){
+			document.getElementById("listSourceLanguage").innerHTML = "French";
+		}else if(currentList.sourceLanguage == "nl"){
+			document.getElementById("listSourceLanguage").innerHTML = "Dutch";
+		}else if(currentList.sourceLanguage == "sv"){
+			document.getElementById("listSourceLanguage").innerHTML = "Swedish";
+		}else if(currentList.sourceLanguage == "zh-CN"){
+			document.getElementById("listSourceLanguage").innerHTML = "Chinese";
+		}else{
+			document.getElementById("listSourceLanguage").innerHTML = currentList.sourceLanguage;
+		}
+		
+		if(currentList.targetLanguage == "en"){
+			document.getElementById("listTargetLanguage").innerHTML = "English";
+		}else if(currentList.targetLanguage == "de"){
+			document.getElementById("listTargetLanguage").innerHTML = "German";
+		}else if(currentList.targetLanguage == "es"){
+			document.getElementById("listTargetLanguage").innerHTML = "Spanish";
+		}else if(currentList.targetLanguage == "fr"){
+			document.getElementById("listTargetLanguage").innerHTML = "French";
+		}else if(currentList.targetLanguage == "nl"){
+			document.getElementById("listTargetLanguage").innerHTML = "Dutch";
+		}else if(currentList.targetLanguage == "sv"){
+			document.getElementById("listTargetLanguage").innerHTML = "Swedish";
+		}else if(currentList.sourceLanguage == "zh-CN"){
+			document.getElementById("listTargetLanguage").innerHTML = "Chinese";
+		}else{
+			document.getElementById("listTargetLanguage").innerHTML = currentList.targetLanguage;
+		}		
+
 		
 		//update boxes
 		document.getElementById("listItemsInBoxAll").innerHTML = currentList.numberOfItems;
@@ -314,8 +416,11 @@
 
 	function updateListContentHandler(obj){
 		
-		trainer.setCurrentListViewItems(obj.data);	
-		trainer.pushVItemsIntoTable(trainer.getCurrentListViewItems(),"vItemTable",0);
+		trainer.setCurrentListViewItems(obj.data);
+			
+		trainer.pushVItemsIntoTable(trainer.getCurrentListViewItems(),"vItemTable",0,
+			document.getElementById("listSourceLanguage").innerHTML,document.getElementById("listTargetLanguage").innerHTML);
+			
 		listChangeListBox(0);
 	}
 
@@ -376,7 +481,16 @@
 		var newRetypeEmail = document.getElementById("registerRetypeEmail").value;
 		var newPassword = document.getElementById("registerPassword").value;
 		var newRetypePassword = document.getElementById("registerRetypePassword").value;
+	
+		var firstListname = document.getElementById("registerListName").value;
 		
+		
+		var firstSourceLanguageOption = document.getElementById("registerSourceLanguage");		
+		var firstSourceLanguage = firstSourceLanguageOption[firstSourceLanguageOption.selectedIndex].value;
+
+		var firstTargetLanguageOption = document.getElementById("registerTargetLanguage");		
+		var firstTargetLanguage = firstTargetLanguageOption[firstTargetLanguageOption.selectedIndex].value;
+				
 		if(newPassword != newRetypePassword){
 			alert("Password is not equal.")
 			return false;
@@ -384,6 +498,11 @@
 		
 		if(newUserName == ""){
 			alert("Username is empty.")
+			return false;
+		}
+		
+		if(firstListname == ""){
+			alert("List name is empty.")
 			return false;
 		}	
 		
@@ -397,7 +516,10 @@
 		params[gadgets.io.RequestParameters.POST_DATA] = gadgets.io.encodeValues({
 			userName : newUserName,
 			email : newEmail,
-			password : newPassword
+			password : newPassword,
+			firstListname : firstListname,
+			firstSourceLanguage : firstSourceLanguage,
+			firstTargetLanguage : firstTargetLanguage
 			});	
 
 		//add salt vs caching
@@ -582,7 +704,8 @@
 	
 	function listChangeListBox(bucketNumber){
 		
-		trainer.pushVItemsIntoTable(trainer.getCurrentListViewItems(),"vItemTable",bucketNumber);
+		trainer.pushVItemsIntoTable(trainer.getCurrentListViewItems(),"vItemTable",bucketNumber,
+			document.getElementById("listSourceLanguage").innerHTML,document.getElementById("listTargetLanguage").innerHTML);
 		
 		document.getElementById("listCurrentBucket").value = bucketNumber;
 		
@@ -639,7 +762,7 @@
 	}
 
 	function openCreateList(){
-		loadContent(CONTENT_URL+'createList.html',createListContentHandler);
+		loadContent(contentUrl+'createList.html',createListContentHandler);
 	}
 	
 	function createListContentHandler(obj){
@@ -652,7 +775,7 @@
 		var cssNode = tmp.createElement('link');
 		cssNode.type = 'text/css';
 		cssNode.rel = 'stylesheet';
-		cssNode.href = CONTENT_URL+"../"+"../css/imcWidgets.css";
+		cssNode.href = contentUrl+"../"+"../css/imcWidgets.css";
 		cssNode.media = 'screen';
 		headID.appendChild(cssNode);
 		
@@ -661,9 +784,26 @@
 		var cssNode = tmp.createElement('link');
 		cssNode.type = 'text/css';
 		cssNode.rel = 'stylesheet';
-		cssNode.href = CONTENT_URL+"../"+"css/vocabularyTrainer.css";
+		cssNode.href = contentUrl+"../"+"css/vocabularyTrainer.css";
 		cssNode.media = 'screen';
 		headID.appendChild(cssNode);
+		
+		
+		var src = tmp.getElementById('createListSourceLanguage');
+		var dst = tmp.getElementById('createListTargetLanguage');
+					 
+		 for (l in google.language.Languages) {
+			var lng = l.toLowerCase();
+			var lngCode = google.language.Languages[l];
+			if (google.language.isTranslatable(lngCode) 
+				&& (lngCode=="de" || lngCode=="en" || lngCode=="fr" 
+					|| lngCode=="es" || lngCode=="zh-CN" || lngCode=="sv" || lngCode=="nl")) {
+							
+			  src.options.add(new Option(lng, lngCode));
+			  dst.options.add(new Option(lng, lngCode));
+
+			}
+		 }
 	}
 	
 	function createNewList(listName,sourceLanguage,targetLanguage){
@@ -848,14 +988,19 @@
 ##############################################################################################################*/
 
 	function updateNewTerm(){
+	
+		var listPos = document.getElementById('addSelectLists').options[document.getElementById('addSelectLists').selectedIndex].value;
+		var tmpCurrentList = trainer.getList(listPos);
+	
+	
 		var newTerm = document.getElementById('newTerm').value;
 
 		if(newTerm != ""){
 			getPhotosFromFlickr(newTerm, numberOfDisplayedPhotos);
 			
 			clearTranslationList();
-			submitToGoogleDictTranslation(newTerm,"","");
-			submitChangeToGoogleTranslation(newTerm,"en","de");
+			submitToGoogleDictTranslation(newTerm,tmpCurrentList.sourceLanguage,tmpCurrentList.targetLanguage);
+			submitChangeToGoogleTranslation(newTerm,tmpCurrentList.sourceLanguage,tmpCurrentList.targetLanguage);
 		}
 	}
 	
@@ -888,7 +1033,7 @@
 		if(absolutePath){
 			popup = window.open(htmlPage, "", "width="+height+",height="+width+",status=yes,scrollbars=no,resizable=no");
 		}else{
-	 		popup = window.open(CONTENT_URL+htmlPage, "", "width="+height+",height="+width+",status=yes,scrollbars=no,resizable=no");
+	 		popup = window.open(contentUrl+htmlPage, "", "width="+height+",height="+width+",status=yes,scrollbars=no,resizable=no");
 	 	}
 	 		popup.focus();
 	}

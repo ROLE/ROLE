@@ -18,24 +18,103 @@
   </ModulePrefs>
   <Content type="html"><![CDATA[
 
-<script src="http://www.learning-demo.eu/roleGadgets/gadgets/imc/languageResourceBrowser/pmrpc.js" type="text/javascript"></script>
+
 <script type="text/javascript" src="http://open-app.googlecode.com/files/openapp.js"></script>
 
-<link href="http://www.learning-demo.eu/roleGadgets/gadgets/imc/languageResourceBrowser/languageResourceBrowser.css" 
-		rel="stylesheet" type="text/css"/>
-	<link href="http://www.learning-demo.eu/roleGadgets/gadgets/imc/css/imcWidgets.css" 
-		rel="stylesheet" type="text/css" />
-
 <script type="text/javascript">
-	// Initialize tabs, designate the tab named "Two" as
-	// the tab selected by default.
+
+/*##############################################################################################################
+	loading external resources
+##############################################################################################################*/
+	var externalResourcesToLoad = 0;
+	
+	function reportError(errString) {
+	  if(!window.__error) window.__error = {};
+	  if( !window.__error[errString] ) {
+	    // Suppress multiple
+	    window.__error[errString] = true;
+	    alert(errString);
+	  }
+	};
+	
+	function getModuleBase() {
+	  if( window.__moduleBase ) return window.__moduleBase;
+	  if( _args ) {
+	    var moduleBase=_args()['url'];
+	    moduleBase=moduleBase.substring(0,moduleBase.lastIndexOf('/')+1);
+	    window.__moduleBase = moduleBase;
+	    return window.__moduleBase;
+	  };
+	  reportError('Can not find module base. Gadget may not work properly.');
+	  return '';
+	};
+	
+	function rebaseRelativeUrl(relativeUrl,cached) {
+	  var moduleBase = getModuleBase();
+	  var absUrl = moduleBase+relativeUrl;
+	  if( cached && _IG_GetCachedUrl ) {
+	    absUrl = _IG_GetCachedUrl(absUrl);
+	  };
+	  return absUrl;
+	};
+	
+	function addStylesheet(cssRelativeUrl,useCaching) {
+	  var rebasedUrl = rebaseRelativeUrl(cssRelativeUrl,useCaching);
+	  document.write('<link rel="stylesheet" href="'+rebasedUrl+'">')
+	};
+	
+	function addScript(jsRelativeUrl,onLoaded,useCaching) {
+	  	
+	  	externalResourcesToLoad++;
+	  	
+	  	var rebasedUrl = rebaseRelativeUrl(jsRelativeUrl,useCaching);
+	  
+	  	//document.write('<script type="text/javascript" src="'+rebasedUrl+'"><\/script>')
+		var script = document.createElement("script");
+		script.src = rebasedUrl;
+		if (onLoaded) script.onload = onLoaded;
+		document.body.appendChild(script);
+	};
+
+	
+	function checkExternalResourcesLoaded(){
+	
+		externalResourcesToLoad--;
+	
+		if(externalResourcesToLoad == 0){
+			gadgetInit();
+		}
+	}
+	
+/*##############################################################################################################
+	globals
+##############################################################################################################*/	
 
 	var tabs = new gadgets.TabSet(__MODULE_ID__, "Text");
 	
-	var CONTENT_URL = "http://www.learning-demo.eu/roleGadgets/gadgets/imc/languageResourceBrowser/html/";
+	//var PROXY_URL = "http://www.learning-demo.eu/gadgetProxy/GadgetProxy?url="
+	var PROXY_URL = "http://localhost:8030/GadgetProxy/GadgetProxy?url="
 	
+	var TEXT_START_PAGE = "http://www.spotlight-online.de";
+	var MEDIA_START_PAGE = "http://www.youtube.com/watch?v=1Th64Nzeaps&feature=player_embedded";	
+	
+/*##############################################################################################################
+	javascript
+##############################################################################################################*/
+
+	function init(){
+
+		var useCaching = false;
+
+		addScript("pmrpc.js",checkExternalResourcesLoaded,useCaching); 
+       	
+       	addStylesheet("../css/imcWidgets.css",useCaching);
+       	addStylesheet("languageResourceBrowser.css",useCaching);
+       	
+       	checkExternalResourcesLoaded();
+	}; 	
 	  
-	function init() {
+	function gadgetInit() {
 		 tabs.addTab("Text", {
 		   contentContainer: document.getElementById("one_id")
 		});
@@ -49,28 +128,14 @@
 		   contentContainer: document.getElementById("four_id")
 		});
 		
-		//load css dynamic 
-      	//loadCss(CONTENT_URL+"../"+"../css/imcWidgets.css");
-      	//loadCss(CONTENT_URL+"../"+"languageResourceBrowser.css");
+		document.getElementById('textURL').value = TEXT_START_PAGE;
+		document.getElementById('mediaURL').value = MEDIA_START_PAGE;
 		    
-		browseToText(document.getElementById('textURL').value);
-		browseToMedia(document.getElementById('mediaURL').value);
+		browseToText(TEXT_START_PAGE);
+		browseToMedia(MEDIA_START_PAGE);
 		
 		gadgets.window.adjustHeight();
 	}
-	
-	function loadCss(url){  
-    	//add salt vs caching
-    	//url+"#"+(new Date()).getTime();
-    
-	    var headID = document.getElementsByTagName("head")[0];         
-		var cssNode = document.createElement('link');
-		cssNode.type = 'text/css';
-		cssNode.rel = 'stylesheet';
-		cssNode.href = url;
-		cssNode.media = 'screen';
-		headID.appendChild(cssNode);
-    }
 	
 	function fetchSelection(onSuccessHandler) {
 			
@@ -79,7 +144,7 @@
 		parameters = {
 		  destination : iframe,
 		  publicProcedureName : "fetchSelection",
-		  params : {"proxyPrefix" : "http://www.learning-demo.eu/gadgetProxy/GadgetProxy?url="},
+		  params : {"proxyPrefix" : PROXY_URL},
 		  onSuccess : onSuccessHandler,
 		  onError : onErrorHandler,
 		  retries : 15,
@@ -87,23 +152,6 @@
 		};
 	 
 		pmrpc.call(parameters);
-		/*
-		var iframe = window.frames[0];
-				
-		var startTime = (new Date()).getTime();
-
-		var parameters = {
-		  destination : iframe,
-		  publicProcedureName : "HelloPMRPC",
-		  params : {time : startTime},
-		  onSuccess : function(returnObj) {alert("Time needed"+returnObj.returnValue);},
-		  onError : function(statusObj) {alert("X"+statusObj.description);},
-		  retries : 5,
-		  timeout : 0
-		};
-		pmrpc.call(parameters);
-		  */
-		//alert("called");
 	}
 	
 	function onErrorHandler(statusObj){
@@ -132,7 +180,6 @@
 		var msgJSONObject =  gadgets.json.stringify(msg);
 		
 		//send it
-		//gadgets.pubsub.publish("role-trainer", msgJSONObject);
 		sendSelection(msgJSONObject);
 	}
 	
@@ -165,7 +212,7 @@
 		iframe = window.frames[0];
 		
 		//get the requested page from the proxy	 
-		iframe.location = "http://www.learning-demo.eu/gadgetProxy/GadgetProxy?url="+url;	
+		iframe.location = PROXY_URL+url;	
 	}	
 	
 	function browseToMedia(url){
@@ -175,8 +222,6 @@
 		//get the requested page from the proxy	
 		iframe.location = url;
 	
-	
-		//"http://www.youtube.com/watch?v=1Th64Nzeaps&amp;feature=player_embedded"
 	}	
 	
 	function getOwnTextSelection(targetId){
@@ -212,7 +257,7 @@
 
  
 	<!-- TAB 1 -->
-	<div id="one_id">
+	<div id="one_id" style="display:none;">
 		<div class="imc_widget_frame" style="height:630px;">
 						
 			<div class="imc_widgetContent">
@@ -230,7 +275,7 @@
 						</div>
 						<div class="urlCenterControls">	
 							<input id="textURL" class="urlInput" type="text" 
-	                        value="http://www.spotlight-online.de/news/technology/from-tweets-to-grapes-twitter-wine-is-coming"/>
+	                        value="http://www.spotlight-online.de"/>
 						</div>	
 					</div>
 				

@@ -3,7 +3,7 @@
   <ModulePrefs 
   	title="Translator" 
 	title_url="" 
-	description="A widget which query different dictianary services" 
+	description="A widget which query different dictionary services" 
 	author="Daniel Dahrendorf" 
 	author_email="daniel.dahrendorf@im-c.de" 
 	author_affiliation="" 
@@ -17,6 +17,13 @@
     <Require feature="dynamic-height"/>
 	<Require feature="tabs" />
   </ModulePrefs>
+
+  <UserPref name="loc2" 
+    display_name="Location2" 
+    required="true" /> 
+  
+  <UserPref name="preferredSourceLanguage" datatype="hidden" default_value="en"/>
+  <UserPref name="preferredTargetLanguage" datatype="hidden" default_value="en"/>
   
   <Content type="html">
     <![CDATA[
@@ -49,37 +56,47 @@
        		//loadCss(CONTENT_URL+"css/translator.css");
 		
 		
-		  var src = document.getElementById('src');
-		  var dst = document.getElementById('dst');
-		  var i=0;
-		  
-		  var insertedLanguages = new Object();
-		  
-		  for (l in google.language.Languages) {
-			var lng = l.toLowerCase();
-			var lngCode = google.language.Languages[l];
-			if (google.language.isTranslatable(lngCode) 
-				&& (lngCode=="de" || lngCode=="en" || lngCode=="fr" 
-					|| lngCode=="es" || lngCode=="zh-CN" || lngCode=="sv" || lngCode=="nl")) {
-						
-			  src.options.add(new Option(lng, lngCode));
-			  dst.options.add(new Option(lng, lngCode));
-			}
-		  }
-		  
-		  
-		 	//src.options.add(new Option("english", "en"));
-			//dst.options.add(new Option("deutsch", "de"));
-		
-		  google.language.getBranding('googleBranding', { type : 'vertical' });
-		
-		  //submitChange();
-		  
-		  //gadgets.pubsub.subscribe("role-translator", termReceived);
-		  subscribe();
-		  
-		  
-		  gadgets.window.adjustHeight();
+			 var src = document.getElementById('src');
+			 var dst = document.getElementById('dst');
+			
+			var optionIndex = 0;
+			
+			//get the preferred language and set option
+			var prefs = new _IG_Prefs();
+			var preferredSourceLanguage = prefs.getString("preferredSourceLanguage");
+			var preferredTargetLanguage = prefs.getString("preferredTargetLanguage");
+			 
+			 for (l in google.language.Languages) {
+				var lng = l.toLowerCase();
+				var lngCode = google.language.Languages[l];
+				if (google.language.isTranslatable(lngCode) 
+					&& (lngCode=="de" || lngCode=="en" || lngCode=="fr" 
+						|| lngCode=="es" || lngCode=="zh-CN" || lngCode=="sv" || lngCode=="nl")) {
+					
+					
+				  src.options.add(new Option(lng, lngCode));
+				  dst.options.add(new Option(lng, lngCode));
+				  
+				  //if we found the preferred source language select it
+				  if(preferredSourceLanguage == lngCode){
+				  	src.options.selectedIndex = optionIndex;
+				  }
+				  
+				  //if we found the preferred target language select it
+				  if(preferredTargetLanguage == lngCode){
+				  	dst.options.selectedIndex = optionIndex;
+				  }
+				  
+				  optionIndex++;
+				}
+			 }
+			 			
+			 google.language.getBranding('googleBranding', { type : 'vertical' });
+
+			 subscribe();
+			 
+			 
+			 gadgets.window.adjustHeight();
 		}
 		
 	    function loadCss(url){  
@@ -123,6 +140,17 @@
 				}
 			}
 		}
+	}
+
+	function changeSrcLanguageOption(option){
+		//var prefs = new _IG_Prefs();
+		gadgets.Prefs().set("preferredSourceLanguage", option[option.selectedIndex].value);
+		
+	}
+
+	function changeDstLanguageOption(option){
+		var prefs = new _IG_Prefs();
+		prefs.set("preferredTargetLanguage", option[option.selectedIndex].value);
 	}
 		
 		
@@ -548,9 +576,9 @@
 						<br/>
 						<label>language</label>
 						<div>
-							<select class="imc_select" name="src" id="src"></select>
+							<select class="imc_select" name="src" id="src" onChange="changeSrcLanguageOption(this)"></select>
 							>>
-							<select class="imc_select" name="dst" id="dst"></select>
+							<select class="imc_select" name="dst" id="dst" onChange="changeDstLanguageOption(this)"></select>
 						</div>
 							
 					</form>
