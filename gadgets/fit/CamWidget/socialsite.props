@@ -1,7 +1,0 @@
-#Directory where GlassFish has been installed
-#Example - /home/user/glassfish or C\:\\Sun\\AppServer
-GLASSFISH_HOME=C:/Programme/Glassfish SDK
-
-#GlassFish domain on which you would like SocialSite suite to be deployed
-#This is the default domain. You only have to change this if your domain is located somewhere else.
-DOMAIN_PATH=${GLASSFISH_HOME}/domains/domain1
