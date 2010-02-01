@@ -1,0 +1,88 @@
+@charset "utf-8";
+/* CSS Document */
+
+.role_widgetFrame{
+	font-family:Tahoma, Geneva, sans-serif;
+	background-color:#DCEEDE;
+	border: 2px solid #000;
+	margin-top: 5px;
+	margin-left: 5px;
+	position:relative;
+	padding-top: 35px;
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
+
+.role_widgetFrame hr{
+	margin-top: 0px;
+}
+
+.role_widgetFrame textarea{
+	font-family:Tahoma, Geneva, sans-serif;
+	font-size:small;
+}
+
+.role_widgetFrame label{
+	font-size:smaller;
+	padding-left:20px;
+}
+
+.role_widgetFrame table{
+	width:100%;
+}
+
+.role_widgetFrame table td{
+	width:50%;
+}
+
+.role_vocabulary_items ul{
+	font-size:smaller;
+	list-style:none;
+	height: 110px;
+	overflow:scroll;
+	padding: 0;
+	margin:0;
+}
+
+.role_vocabulary_items ul li{
+	margin-right:-30px;
+	width:200px;
+	float:left;
+	height:20px;
+}
+
+.role_images ul{
+	font-size:smaller;
+	list-style:none;
+	height: 120px;
+	overflow:scroll;
+	padding: 0;
+	margin:0;	
+}
+
+.role_images ul li{
+	display:block;
+	width:120px;
+	float:left;
+}
+
+.role_widget_part{
+	margin-bottom:10px;	
+}
+
+.listBox{
+	display:block;
+	background:url(http://www.learning-demo.eu/roleGadgets/gadgets/imc/vocabularyTrainer/images/box_small.png) no-repeat;
+	position:relative; 
+	height:35px;
+	width:47px;
+}
+
+.listBox_active{
+	display:block;
+	background:url(http://www.learning-demo.eu/roleGadgets/gadgets/imc/vocabularyTrainer/images/box_active_small.png) no-repeat;
+	position:relative; 
+	height:35px;
+	width:47px;
+}

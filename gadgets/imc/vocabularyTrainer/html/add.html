@@ -1,0 +1,55 @@
+				<form id="addForm" onSubmit="updateNewTerm(); return false;">
+					
+					<div class="role_widget_part">
+						<label>list where the item should be added</label>
+						<select id="addSelectLists" name="addSelectLists" style="width:100%" class="imc_select">
+							<option value=one>default list</option>
+						</select>
+					</div>
+					
+					
+					<div class="role_widget_part">
+						<label>new term / sentence</label>
+						<div style="float:right; margin-top:13px;">	
+							<a 	class="text_button"
+								style="margin-right:5px;"
+								onClick="updateNewTerm(); return false;">
+								<span><span style="width:100px;">Update</span></span>
+							</a>
+						</div>
+						<div style="margin-right:120px;">
+							<input id="newTerm" name="newTerm" type="text" value="" style="width:100%;"/>
+						</div>
+					</div>
+					
+								
+					<div class="role_widget_part">
+						<label>context</label>
+						<textarea id="newContext" name="newContext" style="width:100%; height:100px;"></textarea>
+					 
+					</div>
+					
+					<div class="role_widget_part">
+						<label>source</label>
+						<input id="newSrc" name="newSrc" type="text" value="" style="width:100%;"/>
+					</div>
+					
+					<div class="role_widget_part role_vocabulary_items">
+						<label>suggested translations</label>
+						<ul id="translationList" style="background: #fff; border: solid 1px #333333;">
+							<li><input name="suggestions" type="checkbox" value="" /><input name="newTerm" type="text" /></li>
+						</ul> 
+					</div>  
+					
+					<div class="role_images role_widget_part">
+						<label>suggested images</label>
+						<ul id="flickrPhotoList" style="border: solid 1px #333333; background: #fff;">
+						</ul>
+					 </div>					
+
+					<a 	class="text_button"
+						onClick="addVocabularyItemToDB(getElementById('addSelectLists').options[getElementById('addSelectLists').selectedIndex].value); return false;">
+						<span><span style="width:100px;">Add</span></span>
+					</a>
+					<input type="submit" style="width:0px;height:0px;border:none">					
+				</form>

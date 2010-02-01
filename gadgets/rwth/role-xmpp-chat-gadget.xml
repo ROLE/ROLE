@@ -1,0 +1,148 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<Module>
+<ModulePrefs 
+	title="ROLE XMPP Chat Gadget" 
+	description="An XMPP Chat Gadget implemented for the ROLE Project"
+	author="Dominik Renzel, Chair of Computer Science 5, RWTH Aachen University, Germany"
+	author_email="renzel@dbis.rwth-aachen.de"
+	height="400"
+	width="500"
+	>
+	<Require feature="pubsub"/>
+	<Require feature="setprefs"/>
+	<Require feature="dynamic-height"/>
+	<Require feature="settitle"/>
+</ModulePrefs>
+
+<Content type="html">
+<![CDATA[
+
+<style type="text/css">
+	@import url("http://ajax.googleapis.com/ajax/libs/dojo/1.3.2/dojo/resources/dojo.css");
+	@import url("http://ajax.googleapis.com/ajax/libs/dojo/1.3.2/dijit/themes/dijit.css");
+	@import url("http://ajax.googleapis.com/ajax/libs/dojo/1.3.2/dijit/themes/soria/soria.css");
+	html,body {
+				width: 100%;
+				height: 100%;
+			}
+			
+			.dijitSplitPane{
+				margin: 5px;
+				
+			}
+
+			#buddyList {
+				cursor:pointer;
+			}
+			
+			.presence {
+				background:#525252;
+				height: 10px;
+				width: 10px;
+				margin:5px;
+			}
+			
+			.online, 
+			.available {
+				background: #00AC00;
+			}
+			
+			
+			.away {
+				background: #E20000;
+			}
+			
+		
+			.offline {
+				background: #ccc;
+			}	
+
+</style>
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/dojo/1.3.2/dojo/dojo.xd.js" ></script>
+
+<div id="content" class="soria"  >
+<div dojoType="dijit.Dialog" id="loginDialog" style="display: none; width:400px" title="Login">
+			<table>
+				<tr>	<td colspan="2=>Try the ROLE XMPP Chat with your ROLE XMPP Server account or with the demo account "foo" (password "bar").</td></tr>
+				<tr>
+					<td><label for="loc">Domain: </label></td>
+					<td><input dojoType="dijit.form.TextBox" type="text"  id="xmpp_domain" value="role.dbis.rwth-aachen.de"></td>
+				</tr>
+				<tr>
+					<td><label for="loc">Login: </label></td>
+					<td><input dojoType="dijit.form.TextBox" type="text"  id="xmpp_username" value=""></td>
+				</tr>
+				<tr>
+					<td><label for="loc">Password: </label></td>
+					<td><input dojoType="dijit.form.TextBox" type="password"  id="xmpp_password" value=""></td>
+				</tr>
+				<tr>
+					<td colspan="2" align="center">
+						<button dojoType="dijit.form.Button" onClick="login()" type="submit">Login</button></td>
+				</tr>
+			</table>
+		</div>
+		
+		<div dojoType="dijit.Dialog" id="addUser" style="display: none" title="Add User">
+			<table>
+				<tr>
+					<td><label for="name">Login: </label></td>
+					<td><input dojoType="dijit.form.TextBox" type="text"  id="userJID" value=""></td>
+				</tr>
+				<tr>
+					<td><label for="name">Alias: </label></td>
+					<td><input dojoType="dijit.form.TextBox" type="text"  id="userAlias" value=""></td>
+				</tr>
+				<tr>
+					<td><label for="name">Groups: </label></td>
+					<td><input dojoType="dijit.form.TextBox" type="text"  id="userGroups" value=""></td>
+				</tr>
+				<tr>
+					<td colspan="2" align="center">
+						<button dojoType="dijit.form.Button"  onClick="addUser()" type="submit">Save</button>
+						<button dojoType="dijit.form.Button" onClick="dijit.byId('addUser').hide();" type="submit">Cancel</button></td>
+				</tr>
+			</table>
+		</div>
+			<div dojoType="dijit.Menu" id="buddyMenu" style="display:none; width: 190px;">
+			
+				<div dojoType="dijit.MenuItem"  onClick="showEditBuddy" >
+				 	Edit Buddy
+				</div>
+				<div dojoType="dijit.MenuItem"   onClick="subscribeBuddy">
+					Re-request subscription
+				</div>
+				<div dojoType="dijit.MenuItem"   onClick="deleteBuddy">
+					Delete
+				</div>
+
+			</div>
+		
+		<div dojoType="dijit.layout.LayoutContainer" style="width: 100%; height: 100%">
+			<div dojoType="dijit.layout.ContentPane" layoutAlign="top" style="height: 27px; background: #ffffff;">
+				<table><tr><td><div id="jid-display"></div></td><td>
+				<div>
+				<select dojoType="dijit.form.FilteringSelect" id="presence" name="presence" autoComplete="false" onChange="updatePresence(arguments[0]);">
+						<option value="available" selected>Online</option>
+						<option value="away">Away</option>
+						<option value="chat">Free to Chat</option>
+						<option value="dnd">Do Not Disturb</option>
+						<option value="xa">Extended Away</option>
+					</select>
+					<button dojoType="dijit.form.Button" id="addUserButton" onClick="showAddBuddy()">Add Buddy</button>
+				</div></td></tr></table>
+			</div>
+		
+			<div id="buddyListCP" dojoType="dijit.layout.ContentPane" layoutAlign="right" style="width: 200px; border: 1px solid #999999;overflow: auto">
+				
+			  	<div id="buddyList">
+				</div>
+			</div>
+			<div id="chatTabs" dojoType="dijit.layout.TabContainer" layoutAlign="client" style="border: 1px solid #999999; height:100%"></div>
+		</div>
+	</div>
+	<script type="text/javascript" src="../local_gadgets/role-xmpp-chat-gadget.js" ></script>	
+]]>
+</Content>
+</Module>

@@ -1,0 +1,76 @@
+* Auswahl: Speichern ob CAM Daten Remote/Lokal/Off gespeichert werden
+	- bisher wird beim "neu einloggen" immer "lokal" gesetzt 
+	- wäre besser, wenn sich das System den letzten Zustand merkt
+		+ user profile
+		+ oder via "speichern des Status" - <Require feature="setprefs"/> 
+
+* Verbinden mit neuem OpenApplication Pubsub Gadgets
+
+* TODO: Item-Feed ManyToMany??????
+	--> KEY ÜBERPRÜFEN, OB AUCH ITEMID ZUM FEED-KEY GEHÖRT
+
+select g.*, au.*, rt.*, f.*, i.*, e.*, rd.* from 
+(select * from grouptable) as g,
+(select * from altUrl) as au,
+(select * from readTime) as rt,
+(select * from feed) as f,
+(select * from item) as i,
+(select * from event order by dateTime desc limit 1) as e,
+(select * from relateddata) as rd
+where rd.eventId = e.eventId
+and e.itemId = i.itemId
+and i.feedId = f.feedId
+and rt.feedId = f.feedId
+and au.feedId = f.feedId
+and f.groupId = g.groupId
+
+
+
+--select g.title, f.*, au.*, rt.* from 
+--(select * from grouptable) as g,
+--(select * from feed) as f,
+--(select * from alturl) as au,
+--(select * from readtime) as rt 
+
+
+
+/**
+ * JavaScript representation of the CAM Schema
+ * Root Element: Group
+ */
+
+function Group(title, feeds)
+{
+	this.groupId = null; // (Integer) auto generated 
+    this.title = title; // (String) required
+    this.feeds = feeds; // (Feed) required
+}
+
+function Feed(title, url, type, items) 
+{
+	this.feedId = null; // (Integer) auto generated
+	this.altUrls = new Array(); // (String)
+	this.dateAdded = null; // (Date)
+	this.dateRemoved = null; // (Date)
+	this.lastRead = null; // (Date)
+	this.lastUpdated = null; // (String)
+	this.readTimes = new Array(); // (String)
+	this.title = title; // (String) required
+	this.type = type; // (String) required
+	this.url = url; // (String) required
+	this.userFeed = null; // (String)
+	this.userProfile = null; // (String)
+	this.items = items; // (Item) required
+}
+
+function AltUrl(url)
+{
+	this.urlId = null; // (Integer) auto generated
+	this.url = url; // (String)  
+}
+
+function ReadTime(readTime)
+{
+	this.readTimeId = null; // (Integer) auto generated
+	this.readTime = readTime; // (String)  
+}

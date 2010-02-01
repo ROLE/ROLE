@@ -1,0 +1,47 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Create new List</title>
+<link href="css/vocabularyTrainer.css" rel="stylesheet" type="text/css" >
+<link href="../css/imcWidgets.css" rel="stylesheet" type="text/css" >
+</head>
+<body>
+<div class="imc_widget_frame" style="height:630px;">
+							
+			<!-- START CONTENT -->
+			<div class="imc_widgetContent">
+
+
+	<div style="margin-left:20px;">
+		<div class="role_widget_part">
+			<h1>Create a new list</h1>
+		</div>
+		<div class="role_widget_part">
+			<label>list name:</label><br/>
+			<input id="createListListName" name="createListListName" type="text" value=""/><br/>
+		</div>
+		<div class="role_widget_part">
+			<label>source language:</label><br/>			
+			<select class="imc_select" name="createListSourceLanguage" id="createListSourceLanguage"></select><br/>							
+			<label>destination language:</label><br/>			
+			<select class="imc_select" name="createListTargetLanguage" id="createListTargetLanguage"></select><br/>
+		</div>			
+		<div class="role_widget_part">
+			<a 	class="text_button"
+				style="margin-right:5px;"
+				onClick="window.opener.createNewList(
+					document.getElementById('createListListName').value,
+					document.getElementById('createListSourceLanguage')[document.getElementById('createListSourceLanguage').selectedIndex].value,
+					document.getElementById('createListTargetLanguage')[document.getElementById('createListTargetLanguage').selectedIndex].value); 
+					window.close();">
+				<span><span style="width:100px;">Create List</span></span>
+			</a>
+		</div>
+	</div>
+			</div>
+			<!-- END CONTENT -->
+			
+		</div>
+</body>
+</html>
