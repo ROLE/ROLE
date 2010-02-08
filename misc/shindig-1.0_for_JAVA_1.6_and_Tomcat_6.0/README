@@ -1,0 +1,8 @@
+This Shindig package is for the combination of JAVA 1.6.0 and Tomcat 6.0.
+
+To run Shindig in your Tomcat install Tomcat and copy these both files to:
+
+shindig.properties -> $CATALINA_HOME/conf
+shindig.war -> $CATALINA_HOME/webapps
+
+For more documentation see the ROLE DEVELOPER WIKI.
