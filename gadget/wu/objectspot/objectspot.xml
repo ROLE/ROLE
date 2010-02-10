@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Module>
+  <ModulePrefs title="Objectspot Gadget" width="350" height="290"
+     description="Find academic papers in various digital libraries!"
+     title_url="http://www.role-project.eu/widgets/objectspot"
+     thumbnail="http://teldev.wu.ac.at/objectspot/portlet/img/objectspot_logo.gif"
+     author="Felix Moedritscher" author_email="fmoedrit@wu.ac.at" />
+  <Content type="html">
+    <![CDATA[
+      <iframe src="http://teldev.wu-wien.ac.at/objectspot/portlet/?width=auto&height=auto&maxheight=none&maxwidth=none&fontsize=11px&color1=%23a0bceb&color2=%23eaf2ff&color3=%23424071&color4=%23d7b345&color5=%23fff&color6=%237bafd6&font=Verdana&respp=8&repositories=" style="width:350px;height:290px;" frameborder="0"></iframe>
+    ]]>
+  </Content>
+</Module>

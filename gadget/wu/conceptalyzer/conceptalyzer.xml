@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Module>
+  <ModulePrefs title="Conceptalyzer Gadget" width="350" height="290"
+     description="Analyze your web pages and feeds for relevant concepts!"
+     title_url="http://www.role-project.eu/widgets/conceptalyzer"
+     thumbnail="http://upload.wikimedia.org/wikipedia/en/b/bc/Wiki.png"
+     author="Felix Moedritscher" author_email="fmoedrit@wu.ac.at" />
+  <Content type="html">
+    <![CDATA[
+      <iframe src="http://augur.wu-wien.ac.at/conceptalyzer/" style="width:350px;height:290px;" frameborder="0"></iframe>
+    ]]>
+  </Content>
+</Module>

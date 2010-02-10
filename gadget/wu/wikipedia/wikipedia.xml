@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Module>
+  <ModulePrefs title="Wikipedia Gadget" width="350" height="290"
+     description="Browse the world largest online encyclopedia!"
+     title_url="http://www.role-project.eu/widgets/wikipedia"
+     thumbnail="http://upload.wikimedia.org/wikipedia/en/b/bc/Wiki.png"
+     author="Felix Moedritscher" author_email="fmoedrit@wu.ac.at" />
+  <Content type="html">
+    <![CDATA[
+      <iframe src="http://en.m.wikipedia.org" style="width:350px;height:290px;" frameborder="0"></iframe>
+    ]]>
+  </Content>
+</Module>
